@@ -6,6 +6,11 @@
 #include <algorithm>
 #include <climits>
 
+//objetivo: coloca N rainhas um NxN tabuleiro (matriz)
+//condição: Nenhuma das rainhas pode se atacar / não podem compartilhar LINHA/DIAGONAL/COLUNA
+//conflito: rainhas não podem compartillhar linha/coluna e diagonal
+
+
 /*
 ================================================================================
    HEURÍSTICA UTILIZADA: ALGORITMO DOS MÍNIMOS CONFLITOS (MIN-CONFLICTS)
