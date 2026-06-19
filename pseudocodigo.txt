@@ -1,0 +1,120 @@
+FUNÇÃO POSICAO_VALIDA(estado, linha, coluna)
+
+    PARA i ← 0 ATÉ tamanho(estado)-1 FAÇA
+
+        colunaRainha ← estado[i]
+
+        SE colunaRainha = coluna ENTÃO
+            RETORNE FALSO
+
+        SE ABS(linha - i) =
+           ABS(coluna - colunaRainha) ENTÃO
+            RETORNE FALSO
+
+    FIM PARA
+
+    RETORNE VERDADEIRO
+
+FIM FUNÇÃO
+
+FUNÇÃO CONFLITOS_FUTUROS(estado, N)
+
+    conflitos ← 0
+
+    linhaAtual ← tamanho(estado)
+
+    PARA linha ← linhaAtual ATÉ N-1 FAÇA
+
+        PARA coluna ← 0 ATÉ N-1 FAÇA
+
+            SE NÃO POSICAO_VALIDA(
+                    estado,
+                    linha,
+                    coluna
+               ) ENTÃO
+
+                conflitos ← conflitos + 1
+
+            FIM SE
+
+        FIM PARA
+
+    FIM PARA
+
+    RETORNE conflitos
+
+FIM FUNÇÃO
+
+ALGORITMO A_ESTRELA(N)
+
+    OPEN ← fila de prioridade
+    CLOSED ← conjunto vazio
+
+    estadoInicial ← []
+
+    nóInicial.estado ← estadoInicial
+    nóInicial.g ← 0
+
+    nóInicial.h ←
+        CONFLITOS_FUTUROS(estadoInicial, N)
+
+    nóInicial.f ←
+        nóInicial.g + nóInicial.h
+
+    INSERIR nóInicial em OPEN
+
+    ENQUANTO OPEN não estiver vazia FAÇA
+
+        atual ← REMOVER_MENOR_F(OPEN)
+
+        SE tamanho(atual.estado) = N ENTÃO
+            RETORNE atual
+
+        INSERIR atual.estado em CLOSED
+
+        linha ← tamanho(atual.estado)
+
+        PARA coluna ← 0 ATÉ N-1 FAÇA
+
+            SE POSICAO_VALIDA(
+                   atual.estado,
+                   linha,
+                   coluna
+               ) ENTÃO
+
+                filho.estado ←
+                    COPIAR(atual.estado)
+
+                ADICIONAR coluna
+                    EM filho.estado
+
+                SE filho.estado NÃO ESTÁ
+                   EM CLOSED ENTÃO
+
+                    filho.g ←
+                        atual.g + 1
+
+                    filho.h ←
+                        CONFLITOS_FUTUROS(
+                            filho.estado,
+                            N
+                        )
+
+                    filho.f ←
+                        filho.g + filho.h
+
+                    filho.pai ← atual
+
+                    INSERIR filho EM OPEN
+
+                FIM SE
+
+            FIM SE
+
+        FIM PARA
+
+    FIM ENQUANTO
+
+    RETORNE FALHA
+
+FIM ALGORITMO

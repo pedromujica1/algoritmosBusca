@@ -16,6 +16,16 @@ vector<int> colC; //contagem de rainhas por coluna
 vector<int> d1C;  //diagonal principal: (r - c + n - 1)
 vector<int> d2C;  //diagonal secundaria: (r + c)
 
+
+//esturtura do No
+struct No{
+    vector<int> estado;
+    int g;
+    int h;
+    int f;
+    No* pai;
+};
+
 // Gera números aleatórios
 mt19937 rng(random_device{}());
 
@@ -85,6 +95,55 @@ void desenhar_tabuleiro(int max_print_n) {
         }
         cout << "\n";
     }
+}
+
+bool posicao_valida(vector<int> estados, int coluna, int linha){
+
+    int tamanho_estados = estados.size();
+    int calculo = a;
+    int calculo2 = 
+    for (int i = 0; i < tamanho_estados; i++){
+
+        /* code */
+        int colunaRainha = estados[i]
+
+        if (colunaRainha == coluna){
+            /* code */
+            return false;
+        }
+        if (abs(linha-i) == abs(coluna-colunaRainha)){
+            return false;
+        }  
+    }
+    return true;
+    
+    
+
+}
+
+void conflitos_futuros(){
+
+}
+
+
+void a_estrela(int n_rainhas, <vector> int posicoesRainhas){
+
+    vector<vector<int>> estados;
+    vector<int> conjunto_vazio;
+
+    int g = 0;
+    int h = 8;
+    int f = g + h;
+
+    //adicionando vetor da posicoesRainhas para estados
+    estados.push_back(posicoesRainhas);
+
+
+
+
+
+
+
 }
 
 
