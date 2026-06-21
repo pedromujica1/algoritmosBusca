@@ -81,7 +81,6 @@ void encontrarMelhorVizinho(int vetor[], int melhorVizinho[], int *melhorConflit
 }
 
 // SUBIDA DO MORRO MAIS ÍNGREME 
-
 // Enquanto existir um vizinho melhor que o estado atual, o algoritmo se move para esse vizinho
 // A busca termina quando nenhum vizinho apresenta melhora
 void subidaMorroIngreme(int vetor[]){

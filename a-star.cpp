@@ -1,221 +1,204 @@
 #include <iostream>
 #include <vector>
-#include <string>
 #include <random>
 #include <algorithm>
-#include <climits>
+#include <queue>
+#include <set>
+#include <chrono>
 using namespace std;
-
-//objetivo: colocar N rainhas em um tabuleiro NxN
-//condição: Nenhuma das rainhas pode se atacar (LINHA/DIAGONAL/COLUNA)
-
-int qtdade_rainhas = 8;
-int n = 8; //fixado em 8x8
-vector<int> pos;  //pos[r] = coluna da rainha na linha r (0-based)
-vector<int> colC; //contagem de rainhas por coluna
-vector<int> d1C;  //diagonal principal: (r - c + n - 1)
-vector<int> d2C;  //diagonal secundaria: (r + c)
 
 
 //esturtura do No
 struct No{
-    vector<int> estado;
-    int g;
-    int h;
-    int f;
-    No* pai;
+    vector<int> estado; //vetor das linhas em que cada rainha está
+    int g; //custo para chegar em determinado estado
+    int h; //representa conflitos futuros
+    int f; //soma de g + f
 };
 
-// Gera números aleatórios
-mt19937 rng(random_device{}());
-
-inline int d1(int r, int c) { return r - c + (n - 1); }
-inline int d2(int r, int c) { return r + c; }
-
-int conflitos_linha(int r) {
-    int c = pos[r];
-    return (colC[c] - 1) + (d1C[d1(r, c)] - 1) + (d2C[d2(r, c)] - 1);
-}
-
-int conflitos_se_colocar(int r, int c) {
-    return colC[c] + d1C[d1(r, c)] + d2C[d2(r, c)];
-}
-
-void remover(int r, int c) {
-    colC[c]--;
-    d1C[d1(r, c)]--;
-    d2C[d2(r, c)]--;
-}
-
-void adicionar(int r, int c) {
-    colC[c]++;
-    d1C[d1(r, c)]++;
-    d2C[d2(r, c)]++;
-}
-
-bool validar_posicoes() {
-    for (int r = 0; r < n; r++) {
-        if (pos[r] < 0 || pos[r] >= n) return false;
-    }
-    return true;
-}
-
-vector<int> geraPosicoesrainhas(int qtd){
-    vector<int> linhas_geradas;
-    linhas_geradas.reserve(qtd);
-
-    //gera vetor aleatoria
-    uniform_int_distribution<int> dist_1_a_8(1, 8);
-
-    for (int i = 0; i < qtd; i++) {
-        linhas_geradas.push_back(dist_1_a_8(rng));
-    }
-
-    return linhas_geradas;
-
-
-}
-
-
-void desenhar_tabuleiro(int max_print_n) {
-    if (n > max_print_n) {
-        cout << "\n(Tabuleiro " << n << "x" << n << " nao desenhado: N muito grande. Mostrando so o vetor.)\n";
-        return;
-    }
-
-    if (!validar_posicoes()) {
-        cout << "\nERRO: pos[] tem valores invalidos.\n";
-        return;
-    }
-
-    cout << "\nTabuleiro (" << n << "x" << n << "):\n\n";
-    for (int r = 0; r < n; r++) {
-        for (int c = 0; c < n; c++) {
-            cout << (pos[r] == c ? "R " : ". ");
+//comparador para fila de prioridade
+struct Comparador{
+    bool operator()(const No &a,const No &b){
+        //prioriidade para nó mais profundo
+        if (a.f == b.f) {
+            return a.g < b.g; 
         }
-        cout << "\n";
+        return a.f > b.f;
+    }
+};
+
+struct MetricasAestrela{
+    vector<int> solucao;
+    long long nosGerados;
+    long long nosExpandidos;
+    long long tempoExecucaoMs;
+};
+
+void desenhar_tabuleiro(const vector<int> &estado){
+    int n = estado.size();
+
+    cout << "\nTabuleiro (" << n << "x" << n << ")\n\n";
+
+    for(int linha = 0; linha < n; linha++)
+    {
+        for(int coluna = 0; coluna < n; coluna++)
+        {
+            if(estado[linha] == coluna)
+            {
+                cout << "R ";
+            }
+            else
+            {
+                cout << ". ";
+            }
+        }
+
+        cout << endl;
     }
 }
+bool posicao_valida(const vector<int> &estado, int linha, int coluna){
 
-bool posicao_valida(vector<int> estados, int coluna, int linha){
-
-    int tamanho_estados = estados.size();
-    int calculo = a;
-    int calculo2 = 
+    int tamanho_estados = estado.size(); //qtdade colunas preenchidas
+  
     for (int i = 0; i < tamanho_estados; i++){
-
-        /* code */
-        int colunaRainha = estados[i]
-
-        if (colunaRainha == coluna){
-            /* code */
+        int linhaRainha = estado[i]; 
+        
+        //verificação da linha
+        if (linhaRainha == linha){
             return false;
         }
-        if (abs(linha-i) == abs(coluna-colunaRainha)){
+        //verificação da diagonal
+        if (abs(coluna - i) == abs(linha - linhaRainha)){
             return false;
         }  
     }
     return true;
+}
+
+int conflitos_futuros(int N, const vector<int> &estado){
+    int conflitos = 0;
     
-    
+    //primeira coluna vazia do tabuleiro
+    int colunaAtual = estado.size();
 
-}
-
-void conflitos_futuros(){
-
-}
-
-
-void a_estrela(int n_rainhas, <vector> int posicoesRainhas){
-
-    vector<vector<int>> estados;
-    vector<int> conjunto_vazio;
-
-    int g = 0;
-    int h = 8;
-    int f = g + h;
-
-    //adicionando vetor da posicoesRainhas para estados
-    estados.push_back(posicoesRainhas);
-
-
-
-
-
-
-
-}
-
-
-
-int main() {
-    // Inicialização dos vetores dinâmicos para tamanho N = 8
-    pos.assign(n, -1);
-    colC.assign(n, 0);
-    d1C.assign(2 * n - 1, 0);
-    d2C.assign(2 * n - 1, 0);
-
-    /* Vetor fixo de entrada (8 posições).
-       O índice representa a COLUNA e o valor representa a LINHA ocupada.
-       Exemplo fornecido adaptado para 8 rainhas (0-based index):
-       Coluna 0 -> Linha 4
-       Coluna 1 -> Linha 2
-       Coluna 2 -> Linha 4
-       Coluna 3 -> Linha 4
-       Coluna 4 -> Linha 2
-       ... preenchido com valores de exemplo até completar as 8 colunas.
-    */
-    vector<int> entrada_fixa = {4, 2, 4, 4, 2, 0, 7, 5}; 
-
-    // Mapeia a entrada fixa (coluna -> linha) para a estrutura interna (linha -> coluna)
-    for (int c = 0; c < n; c++) {
-        int r = entrada_fixa[c];
-        pos[r] = c; 
-    }
-
-    // Se alguma linha ficou vazia devido a colisões na entrada, preenchemos com uma coluna livre
-    vector<bool> col_usada(n, false);
-    for (int r = 0; r < n; r++) {
-        if (pos[r] != -1) {
-            col_usada[pos[r]] = true;
-        }
-    }
-    for (int r = 0; r < n; r++) {
-        if (pos[r] == -1) {
-            for (int c = 0; c < n; c++) {
-                if (!col_usada[c]) {
-                    pos[r] = c;
-                    col_usada[c] = true;
-                    break;
-                }
+    //apenas as colunas futuras que ainda nao possuem rainhas
+    for (int coluna = colunaAtual; coluna < N; coluna++){
+      
+        for (int linha = 0; linha < N; linha++){
+            
+            if(!posicao_valida(estado, linha, coluna)){
+                conflitos += 1;
             }
+        }  
+    }
+    return conflitos;
+}
+
+
+MetricasAestrela a_estrela(int n_rainhas, const vector<int>&estadoInicial){
+
+    //variaveis de metrica
+    long long nosGerados = 1;      // nó inicial
+    long long nosExpandidos = 0;
+
+    //FILA DE PRIORIDADE q ordena de acordo com o f
+    priority_queue<No, vector<No>,Comparador> listaAberta;
+
+    //CONJUNTO FECHADO
+    set<vector<int>> listaFechada;
+
+    //NÓ INICIAL
+    No noInicial;
+    
+    //definindo valores do estado inicial
+    noInicial.estado = estadoInicial;
+    noInicial.g = 0;
+    noInicial.h = conflitos_futuros(n_rainhas,estadoInicial);
+    noInicial.f = noInicial.g + noInicial.h;
+
+    //inserindo estado inicial
+    listaAberta.push(noInicial);
+
+    while (!listaAberta.empty()){
+        //pega o nó inicial inserido
+        No noAtual = listaAberta.top();
+        //retira o nó do topo
+        listaAberta.pop();
+        nosExpandidos++;
+
+        //pegando as posiçoes das rainhas do nó atual
+        const vector<int>&posicoesAtuais = noAtual.estado;
+        
+        //encerramento do programa quando preenche as n_rainhas
+        if(posicoesAtuais.size() == n_rainhas){
+            //coleta resultados
+            MetricasAestrela resultado;
+
+            resultado.solucao = posicoesAtuais;
+            resultado.nosGerados = nosGerados;
+            resultado.nosExpandidos = nosExpandidos;
+
+            return resultado;
         }
+        //insere na listaFechada o estado atual
+        listaFechada.insert(noAtual.estado);
+
+        //COLUNA ESCOLHIDA PARA VERIFICAR
+        int coluna = posicoesAtuais.size();
+
+        //laço agora itera testando as LINHAS
+        for (int linha = 0; linha < n_rainhas; linha++){
+
+            No noFilho;
+
+            //VERIFICA SE POSICAO É VALIDA PARA GERAR FILHOS
+            if(posicao_valida(noAtual.estado, linha, coluna)){
+                
+                noFilho.estado = noAtual.estado;
+                //Adiciona a LINHA escolhida no vetor daquela COLUNA
+                noFilho.estado.push_back(linha);
+
+                //Se filho não está na listaFechada
+                if(listaFechada.find(noFilho.estado) == listaFechada.end()){
+                    noFilho.g = noAtual.g + 1;
+                    noFilho.h = conflitos_futuros(n_rainhas, noFilho.estado);
+                    noFilho.f = noFilho.g + noFilho.h;
+
+                    listaAberta.push(noFilho);
+                    nosGerados++;
+                }
+            }  
+        }
+
+        
     }
+    //cout << "Solução não encontrada!";
+    //coleta resultados
+    MetricasAestrela resultado;
 
-    // Adiciona as rainhas iniciais ao sistema de contagem de conflitos
-    for (int r = 0; r < n; r++) adicionar(r, pos[r]);
+    resultado.solucao = estadoInicial;
+    resultado.nosGerados = nosGerados;
+    resultado.nosExpandidos = nosExpandidos;
 
-    cout << "Configuracao Inicial Gerada:";
-    desenhar_tabuleiro(30);
+    return resultado;
+}
 
-    int tentativas = 20;
-    
+//função para medir tempo de execução
+MetricasAestrela executar_a_estrela(int n_rainhas) {
+    vector<int> estadoInicial;
 
-    uniform_int_distribution<int> dist_tabuleiro(0, n - 1);
+    //cronômetro inicia aqui
+    auto inicio = chrono::high_resolution_clock::now();
 
-    
+    //executa busca
+    MetricasAestrela resultado = a_estrela(n_rainhas, estadoInicial);
 
-    if (passos >= 0) {
-        cout << "\n==========================================";
-        cout << "\nSolucao encontrada em " << passos << " passos\n";
-        cout << "Vetor solucao (coluna por linha): ";
-        for (int r = 0; r < n; r++) cout << pos[r] << " ";
-        cout << "\n";
+    //cronometro para aqui
+    auto fim = chrono::high_resolution_clock::now();
+    auto duracao = chrono::duration_cast<chrono::milliseconds>(fim - inicio);
 
-        desenhar_tabuleiro(30);
-    } else {
-        cout << "\nNao convergiu dentro do limite.\n";
-    }
+    //injeçao do tempo medido em Ms
+    resultado.tempoExecucaoMs = duracao.count();
 
-    return 0;
+    return resultado;
 }
