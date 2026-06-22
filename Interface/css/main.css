@@ -1,0 +1,223 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    min-height: 100vh;
+
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+
+    padding: 40px 20px;
+
+    background: #A77F60;
+    font-family: Arial, Helvetica, sans-serif;
+
+    overflow-x: hidden;
+    position: relative;
+    --side-bar-width: clamp(30px, 5vw, 80px);
+}
+
+body::before,
+body::after {
+    width: var(--side-bar-width);
+}
+
+/* Barras laterais */
+body::before,
+body::after {
+    content: "";
+
+    position: fixed;
+    top: 0;
+    width: clamp(30px, 5vw, 80px);
+    height: 100%;
+
+    background: rgba(0, 0, 0, 0.08);
+
+    z-index: -2;
+}
+
+body::before {
+    left: 0;
+}
+
+body::after {
+    right: 0;
+}
+
+/* Container principal */
+.container {
+    width: min(100%, 850px);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    gap: 18px;
+
+    padding: 30px;
+
+    background: rgba(255, 255, 255, 0.05);
+
+    border-radius: 20px;
+
+    box-shadow:
+        0 15px 35px rgba(0, 0, 0, 0.15);
+
+    backdrop-filter: blur(2px);
+}
+
+/* Títulos */
+h1 {
+    color: white;
+    text-align: center;
+
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    font-weight: 700;
+}
+
+h2 {
+    color: #F3E4C9;
+    text-align: center;
+
+    font-size: clamp(1rem, 2vw, 1.8rem);
+    font-weight: 600;
+}
+
+/* Tabuleiro */
+.board {
+    width: min(75vw, 560px);
+    height: min(75vw, 560px);
+
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    grid-template-rows: repeat(8, 1fr);
+
+    border: 4px solid #2c2c2c;
+
+    box-shadow:
+        0 0 20px rgba(0,0,0,.2),
+        0 15px 35px rgba(0,0,0,.25);
+}
+
+.cell {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.white {
+    background: #E7D3AE;
+}
+
+.black {
+    background: #B78C63;
+}
+
+/* Peças */
+.queen {
+    width: 45%;
+    height: 45%;
+    object-fit: contain;
+}
+
+/* Botão */
+button {
+    padding: 14px 28px;
+
+    border: none;
+    border-radius: 12px;
+
+    background: #8A5F41;
+    color: white;
+
+    font-size: 1rem;
+    font-weight: bold;
+
+    cursor: pointer;
+
+    transition: all 0.25s ease;
+}
+
+button:hover {
+    background: #c28658;
+    transform: translateY(-2px);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+/* Rainhas decorativas */
+.queen-side {
+    position: fixed;
+
+    top: 50%;
+    transform: translateY(-50%);
+
+    width: clamp(80px, 8vw, 140px);
+
+    opacity: 0.75;
+
+    pointer-events: none;
+    user-select: none;
+
+    z-index: -1;
+}
+
+.left-queen {
+    left: calc(var(--side-bar-width) + clamp(20px, 3vw, 60px));
+}
+
+.right-queen {
+    right: calc(var(--side-bar-width) + clamp(20px, 3vw, 60px));
+}
+/* Tablet */
+@media (max-width: 768px) {
+
+    .container {
+        padding: 20px;
+    }
+
+    .board {
+        width: min(90vw, 500px);
+        height: min(90vw, 500px);
+    }
+
+    .queen-side {
+        width: 70px;
+        opacity: 0.75;
+    }
+}
+
+/* Celular */
+@media (max-width: 600px) {
+
+    body {
+        padding: 20px 10px;
+    }
+
+    .container {
+        padding: 15px;
+    }
+
+    .board {
+        width: 95vw;
+        height: 95vw;
+    }
+
+    button {
+        width: 100%;
+        max-width: 300px;
+    }
+
+    .queen-side,
+    body::before,
+    body::after {
+        display: none;
+    }
+}
