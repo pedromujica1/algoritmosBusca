@@ -9,11 +9,11 @@ g++ main.cpp a-star.cpp hill_climbing.cpp -o servidor -std=c++17 -lpthread -lboo
 
 Para testar Hill-Climbing
 ```bash
-http://127.0.0.1:18080/hill-climbing/8
+https://defensive-elaine-ifpr-d62571ec.koyeb.app/hill-climbing/8
 ```
 
 Para testar A*
 ```bash
-http://127.0.0.1:18080/a-estrela/8
+https://defensive-elaine-ifpr-d62571ec.koyeb.app/a-estrela/8
 ```
 
