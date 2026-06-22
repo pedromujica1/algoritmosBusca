@@ -16,4 +16,3 @@ Para testar A*
 ```bash
 https://defensive-elaine-ifpr-d62571ec.koyeb.app/a-estrela/8
 ```
-
