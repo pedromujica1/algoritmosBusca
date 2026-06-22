@@ -130,7 +130,8 @@ MetricasAestrela a_estrela(int n_rainhas, const vector<int>&estadoInicial){
         const vector<int>&posicoesAtuais = noAtual.estado;
         
         //encerramento do programa quando preenche as n_rainhas
-        if(posicoesAtuais.size() == n_rainhas){
+        //converte em int comum para compilador não avisar erro
+        if(static_cast<int>(posicoesAtuais.size()) == n_rainhas){
             //coleta resultados
             MetricasAestrela resultado;
 

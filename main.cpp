@@ -1,5 +1,5 @@
 #define CROW_MAIN
-#include "crow_all.h"
+#include "lib/crow_all.h"
 #include <iostream>
 #include <vector>
 #include <random>
@@ -8,8 +8,8 @@
 #include <set>
 #include <chrono>
 //incluindo arquivo de cabeçalho dos dois algoritmos
-#include "astar.h"
-#include "hill_climbing.h"
+#include "src/astar.h"
+#include "src/hill_climbing.h"
 using namespace std;
 
 int main(){
@@ -69,6 +69,6 @@ int main(){
         return resposta;
     });
 
-    app.port(18080).multithreaded().run();
+    app.port(8000).multithreaded().run();
     return 0;
 }
