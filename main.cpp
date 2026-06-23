@@ -12,22 +12,6 @@ using namespace std;
 #include "src/astar.h"
 #include "src/hill_climbing.h"
 
-
-//aqui
-// Função auxiliar para ler o arquivo HTML (sem os prefixos std::)
-string ler_arquivo_html(const string& caminho) {
-    ifstream arquivo(caminho);
-    if (!arquivo.is_open()) {
-        return "<h1>Erro: Arquivo HTML não encontrado!</h1>";
-    }
-    stringstream buffer;
-    buffer << arquivo.rdbuf();
-    return buffer.str();
-}
-
-
-using namespace std;
-
 int main(){
     //definindo uma instancia app
     crow::SimpleApp app;
