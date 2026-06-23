@@ -7,23 +7,32 @@
 #include <queue>
 #include <set>
 #include <chrono>
+using namespace std;
 //incluindo arquivo de cabeçalho dos dois algoritmos
 #include "src/astar.h"
 #include "src/hill_climbing.h"
+
+
+//aqui
+// Função auxiliar para ler o arquivo HTML (sem os prefixos std::)
+string ler_arquivo_html(const string& caminho) {
+    ifstream arquivo(caminho);
+    if (!arquivo.is_open()) {
+        return "<h1>Erro: Arquivo HTML não encontrado!</h1>";
+    }
+    stringstream buffer;
+    buffer << arquivo.rdbuf();
+    return buffer.str();
+}
+
+
 using namespace std;
 
 int main(){
     //definindo uma instancia app
     crow::SimpleApp app;
 
-    CROW_ROUTE(app, "/")([](){
-        crow::json::wvalue resposta;
-        resposta["mensagem"] = "Olá! Bem-vindo ao meu servidor dos algoritmos de busca!";
-        resposta["status"] = "sucesso";
-        return resposta;
-    });
-
-    //Dentro do escopo do servidor Crow...
+    //rota para executar a-estrela.
     CROW_ROUTE(app, "/a-estrela/<int>")([](int n){
         crow::json::wvalue resposta;
 
@@ -33,7 +42,7 @@ int main(){
             return resposta;
         }
 
-        // Chama a nova função isolada que faz tudo!
+        //chamada de função
         MetricasAestrela resultado = executar_a_estrela(n); 
 
         resposta["status"] = "sucesso";
@@ -49,16 +58,17 @@ int main(){
     CROW_ROUTE(app, "/hill-climbing/<int>")([](int n){
         crow::json::wvalue resposta;
 
-        if (n <= 3 || n > 20) { 
+        if (n <= 3 || n > 8) { 
             resposta["status"] = "erro";
             resposta["mensagem"] = "Por favor, use um N válido (ex: entre 4 e 20).";
             return resposta;
         }
 
-        // Executa a busca estruturada
+        //executa a busca estruturada
         MetricasHillClimbing resultado = executaHill_climbing(n);
 
         resposta["status"] = "sucesso";
+        resposta["estado_inicial"] = resultado.solucaoInicial;
         resposta["n_rainhas"] = n;
         resposta["solucao"] = resultado.solucao;
         resposta["metricas"]["nos_gerados"] = resultado.nosGerados;
@@ -68,6 +78,38 @@ int main(){
 
         return resposta;
     });
+
+    CROW_ROUTE(app, "/hill-climbing/benchmark")([](){
+
+        //auto é usado para dados complexos
+        auto resultados = benchmarkHill_climbing();
+        crow::json::wvalue resposta;
+        resposta["status"] = "sucesso";
+
+        //lista em json para salvar tudo
+        crow::json::wvalue::list lista;
+
+        for(const auto &resultado : resultados){
+
+            crow::json::wvalue item;
+
+            item["estado_inicial"] = resultado.solucaoInicial;
+            item["solucao"] = resultado.solucao;
+            item["seed"] = resultado.seed;
+            item["tempo_ms"] = resultado.tempoExecucaoMs;
+            item["nos_gerados"] = resultado.nosGerados;
+            item["nos_expandidos"] = resultado.nosExpandidos;
+            item["reinicios"] = resultado.reinicios;
+
+            lista.push_back(move(item));
+        }
+
+        resposta["resultados"] = move(lista);
+
+        return resposta;
+    });
+
+
 
     app.port(8000).multithreaded().run();
     return 0;

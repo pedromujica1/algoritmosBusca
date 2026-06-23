@@ -3,6 +3,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <chrono>
+#include <random>
 using namespace std;
 
 //calcula a quantidade total de conflitos do tabuleiro
@@ -21,16 +22,20 @@ int calcularConflito(const vector<int>& vetor, int n) {
 }
 
 //gera um estado inicial totalmente aleatório
-vector<int> gerarEstadoAleatorio(int n) {
+vector<int> gerarEstadoAleatorio(int n, mt19937& rng) {
+
     vector<int> vetor(n);
-    for(int i = 0; i < n; i++){
-        vetor[i] = rand() % n;
+
+    uniform_int_distribution<int> dist(0, n - 1);
+
+    for(int i = 0; i < n; i++) {
+        vetor[i] = dist(rng);
     }
+
     return vetor;
 }
-
 //encontra o melhor vizinho modificando apenas uma rainha por vez
-void encontrarMelhorVizinho(const vector<int>& vetor, int n, vector<int>& melhorVizinho, int& melhorConflito, long long& nosGerados) {
+void encontrarMelhorVizinho(const vector<int>& vetor, int n, vector<int>& melhorVizinho, int& melhorConflito, long long &nosGerados) {
     melhorVizinho = vetor;
     
     for(int coluna = 0; coluna < n; coluna++){ 
@@ -75,22 +80,34 @@ void subidaMorroIngreme(vector<int>& vetor, int n, long long& nosGerados, long l
 }
 
 //gerenciador do Hill Climbing que aplica os reinícios caso trave
-MetricasHillClimbing executaHill_climbing(int n_rainhas) {
-    auto inicio = chrono::high_resolution_clock::now();
+MetricasHillClimbing executaHill_climbing(int n_rainhas, int seed) {
 
+    auto inicio = chrono::high_resolution_clock::now();
+    //gerador de seed
+    //mt19937 rng(seed);
+    
+    
+    mt19937 rng(seed);
     long long nosGerados = 0;
     long long nosExpandidos = 0;
     int tentativas = 0;
-    
+
     vector<int> vetor;
+    vector<int> estadoInicial;
 
     while(true){
-        vetor = gerarEstadoAleatorio(n_rainhas);
+
+        vetor = gerarEstadoAleatorio(n_rainhas, rng);
+
+        // guarda apenas o primeiro estado inicial da execução
+        if(tentativas == 0){
+            estadoInicial = vetor;
+        }
+
         tentativas++;
 
-        subidaMorroIngreme(vetor, n_rainhas, nosGerados, nosExpandidos);
+        subidaMorroIngreme(vetor,n_rainhas,nosGerados,nosExpandidos);
 
-        // Se encontrou a solução sem conflitos, encerra
         if(calcularConflito(vetor, n_rainhas) == 0){
             break;
         }
@@ -99,13 +116,29 @@ MetricasHillClimbing executaHill_climbing(int n_rainhas) {
     auto fim = chrono::high_resolution_clock::now();
     auto duracao = chrono::duration_cast<chrono::milliseconds>(fim - inicio);
 
-    // Mapeia os dados para a struct estruturada de retorno
     MetricasHillClimbing resultado;
+
+    resultado.solucaoInicial = estadoInicial;
     resultado.solucao = vetor;
     resultado.nosGerados = nosGerados;
     resultado.nosExpandidos = nosExpandidos;
     resultado.reinicios = tentativas;
     resultado.tempoExecucaoMs = duracao.count();
-
     return resultado;
+  
+}
+
+vector<MetricasHillClimbing> benchmarkHill_climbing() {
+
+    int seeds[] = {42, 123, 456, 789, 2025};
+    vector<MetricasHillClimbing> resultados;
+
+    for(int i = 0; i < 5; i++) {
+
+        MetricasHillClimbing resultado = executaHill_climbing(8, seeds[i]);
+
+        resultados.push_back(resultado);
+    }
+
+    return resultados;
 }
