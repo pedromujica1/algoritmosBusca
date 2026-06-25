@@ -7,6 +7,7 @@
 #include <queue>
 #include <set>
 #include <chrono>
+#include <crow/middlewares/cors.h>
 using namespace std;
 //incluindo arquivo de cabeçalho dos dois algoritmos
 #include "src/astar.h"
@@ -32,6 +33,15 @@ crow::json::wvalue converteParaJson(const MetricasHillClimbing &resultado){
 int main(){
     //definindo uma instancia app
     crow::SimpleApp app;
+
+    auto& cors = app.get_middleware<crow::CORSHandler>();
+
+    // Configura as regras CORS globais
+    cors.global()
+        .origin("*") // Permite requisições de qualquer domínio
+        .methods("POST"_method, "GET"_method, "PUT"_method, "DELETE"_method) // Métodos HTTP permitidos
+        .headers("Content-Type", "Authorization"); // Cabeçalhos permitidos
+
 
     //rota para executar a-estrela.
     CROW_ROUTE(app, "/a-estrela/<int>")([](int n){
