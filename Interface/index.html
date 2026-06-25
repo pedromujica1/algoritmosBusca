@@ -14,11 +14,32 @@
         <h1>Trabalho de Inteligência Artificial - P1</h1>
         <h2>Problema das 8 Rainhas</h2>
 
-        <div id="board" class="board"></div>
+        <div class="boards-container">
 
-        <button id="solveBtn">
-            Iniciar / Reiniciar Solução
-        </button>
+            <div class="board-wrapper">
+                <h3>Estado Inicial</h3>
+            <div id="initialBoard" class="board"></div>
+            </div>
+
+            <div class="board-wrapper">
+                <h3>Solução</h3>
+                <div id="solutionBoard" class="board"></div>
+            </div>
+
+        </div>
+
+        <div>
+          <button id="iniciarEstados">
+                Iniciar Estados
+            </button>
+            <button id="solveBtnHill">
+                Iniciar solução Hill Climb
+            </button>
+            <button id="solveBtnA">
+                Iniciar solução A*
+            </button>  
+        </div>
+        
 
     </main>
 
