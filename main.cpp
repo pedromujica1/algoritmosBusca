@@ -12,6 +12,23 @@ using namespace std;
 #include "src/astar.h"
 #include "src/hill_climbing.h"
 
+
+//função que converte para json
+crow::json::wvalue converteParaJson(const MetricasHillClimbing &resultado){
+
+    crow::json::wvalue item;
+
+    item["estado_inicial"] = resultado.solucaoInicial;
+    item["solucao"] = resultado.solucao;
+    item["seed"] = resultado.seed;
+    item["tempo_ms"] = resultado.tempoExecucaoMs;
+    item["nos_gerados"] = resultado.nosGerados;
+    item["nos_expandidos"] = resultado.nosExpandidos;
+    item["reinicios"] = resultado.reinicios;
+
+    return item;
+}
+
 int main(){
     //definindo uma instancia app
     crow::SimpleApp app;
@@ -65,30 +82,18 @@ int main(){
 
     CROW_ROUTE(app, "/hill-climbing/benchmark")([](){
 
-        //auto é usado para dados complexos
-        auto resultados = benchmarkHill_climbing();
+        vector<MetricasHillClimbing> resultados = benchmarkHill_climbing();
+
         crow::json::wvalue resposta;
         resposta["status"] = "sucesso";
 
-        //lista em json para salvar tudo
         crow::json::wvalue::list lista;
 
-        for(const auto &resultado : resultados){
-
-            crow::json::wvalue item;
-
-            item["estado_inicial"] = resultado.solucaoInicial;
-            item["solucao"] = resultado.solucao;
-            item["seed"] = resultado.seed;
-            item["tempo_ms"] = resultado.tempoExecucaoMs;
-            item["nos_gerados"] = resultado.nosGerados;
-            item["nos_expandidos"] = resultado.nosExpandidos;
-            item["reinicios"] = resultado.reinicios;
-
-            lista.push_back(move(item));
+        for(const MetricasHillClimbing &resultado : resultados){
+            lista.push_back(converteParaJson(resultado));
         }
 
-        resposta["resultados"] = move(lista);
+        resposta["resultados"] = std::move(lista);
 
         return resposta;
     });

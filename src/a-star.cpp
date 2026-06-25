@@ -14,6 +14,7 @@ struct No{
     int g; //custo para chegar em determinado estado
     int h; //representa conflitos futuros
     int f; //soma de g + f
+    No *pai;
 };
 
 //comparador para fila de prioridade
@@ -56,43 +57,95 @@ void desenhar_tabuleiro(const vector<int> &estado){
         cout << endl;
     }
 }
-bool posicao_valida(const vector<int> &estado, int linha, int coluna){
 
-    int tamanho_estados = estado.size(); //qtdade colunas preenchidas
-  
-    for (int i = 0; i < tamanho_estados; i++){
-        int linhaRainha = estado[i]; 
-        
-        //verificação da linha
-        if (linhaRainha == linha){
-            return false;
-        }
-        //verificação da diagonal
-        if (abs(coluna - i) == abs(linha - linhaRainha)){
-            return false;
-        }  
-    }
-    return true;
-}
+void calcularHeuristica(vector<int> estado){
 
-int conflitos_futuros(int N, const vector<int> &estado){
-    int conflitos = 0;
-    
-    //primeira coluna vazia do tabuleiro
-    int colunaAtual = estado.size();
 
-    //apenas as colunas futuras que ainda nao possuem rainhas
-    for (int coluna = colunaAtual; coluna < N; coluna++){
-      
-        for (int linha = 0; linha < N; linha++){
+    int N = estado.size();
+
+    //inicialização do vetor com false
+    vector<bool> conflito(N, false);
+
+    //encontra conflitos
+    for (int i = 0; i < N - 1; ++i) {
+        for (int j = i + 1; j < N; ++j) {
             
-            if(!posicao_valida(estado, linha, coluna)){
-                conflitos += 1;
+            //verificação de mesma linha
+            if (estado[i] == estado[j]) {
+                conflito[i] = true;
+                conflito[j] = true;
             }
-        }  
+
+            //verificação de diagonais
+            if (abs(i - j) == abs(estado[i] - estado[j])) {
+                conflito[i] = true;
+                conflito[j] = true;
+            }
+        }
     }
-    return conflitos;
+
+    //Contagem de quantas rainhas estão em conflito
+    int h = 0;
+    for (int i = 0; i < N; ++i) {
+        if (conflito[i]) {
+            h++;
+        }
+    }
+
+    return h;
+
 }
+
+void atualizarCustos(No &vizinho, No *atual){
+    vizinho.g = atual->g + 1;
+
+    vizinho.h = calcularHeuristica(vizinho.estado);
+
+    vizinho.f = vizinho.g + vizinho.h;
+
+    vizinho.pai = atual;
+}
+
+vector<No> gerarVizinhos(No *atual){
+
+    vector<No> vizinhos;
+    int N = atual->estado.size();
+
+    for(int linha=0; linha<N; linha++)
+    {
+        int colunaAtual = atual->estado[linha];
+
+        for(int coluna=0; coluna<N; coluna++)
+        {
+            if(coluna == colunaAtual)
+                continue;
+
+            No novoVizinho;
+
+            novoVizinho.estado = atual->estado;
+
+            novoVizinho.estado[linha] = coluna;
+
+            vizinhos.push_back(novoVizinho);
+        }
+    }
+
+    return vizinhos;
+
+}
+
+bool estadoObjetivo(vector<int> estado){
+    if(calcularHeuristica(estado) == 0){
+        return true
+    }
+
+}
+
+void processarVizinhos( No &vizinho,No *atual, priority_queue<No, vector<No>, Comparador> &open, vector<No> &closed){
+
+
+}
+
 
 
 MetricasAestrela a_estrela(int n_rainhas, const vector<int>&estadoInicial){
@@ -131,7 +184,7 @@ MetricasAestrela a_estrela(int n_rainhas, const vector<int>&estadoInicial){
         
         //encerramento do programa quando preenche as n_rainhas
         //converte em int comum para compilador não avisar erro
-        if(static_cast<int>(posicoesAtuais.size()) == n_rainhas){
+        if(estadoObjetivo(posicoesAtuais)){
             //coleta resultados
             MetricasAestrela resultado;
 
@@ -144,32 +197,8 @@ MetricasAestrela a_estrela(int n_rainhas, const vector<int>&estadoInicial){
         //insere na listaFechada o estado atual
         listaFechada.insert(noAtual.estado);
 
-        //COLUNA ESCOLHIDA PARA VERIFICAR
-        int coluna = posicoesAtuais.size();
-
-        //laço agora itera testando as LINHAS
-        for (int linha = 0; linha < n_rainhas; linha++){
-
-            No noFilho;
-
-            //VERIFICA SE POSICAO É VALIDA PARA GERAR FILHOS
-            if(posicao_valida(noAtual.estado, linha, coluna)){
-                
-                noFilho.estado = noAtual.estado;
-                //Adiciona a LINHA escolhida no vetor daquela COLUNA
-                noFilho.estado.push_back(linha);
-
-                //Se filho não está na listaFechada
-                if(listaFechada.find(noFilho.estado) == listaFechada.end()){
-                    noFilho.g = noAtual.g + 1;
-                    noFilho.h = conflitos_futuros(n_rainhas, noFilho.estado);
-                    noFilho.f = noFilho.g + noFilho.h;
-
-                    listaAberta.push(noFilho);
-                    nosGerados++;
-                }
-            }  
-        }
+        //gerar vizinhos
+        
 
         
     }
