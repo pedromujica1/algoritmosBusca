@@ -137,9 +137,6 @@ vector<No> gerarVizinhos(No *atual){
 
 
 
-
-
-
 MetricasAestrela a_estrela(int n_rainhas, const vector<int>&estadoInicial){
 
     //variaveis de metrica
