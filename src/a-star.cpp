@@ -58,9 +58,7 @@ void desenhar_tabuleiro(const vector<int> &estado){
     }
 }
 
-void calcularHeuristica(vector<int> estado){
-
-
+int calcularHeuristica(vector<int> estado){
     int N = estado.size();
 
     //inicialização do vetor com false
@@ -85,15 +83,18 @@ void calcularHeuristica(vector<int> estado){
     }
 
     //Contagem de quantas rainhas estão em conflito
-    int h = 0;
+    int cont_conflitos = 0;
     for (int i = 0; i < N; ++i) {
         if (conflito[i]) {
-            h++;
+            cont_conflitos++;
         }
     }
 
-    return h;
+    return cont_conflitos;
+}
 
+bool estadoObjetivo(vector<int> estado){
+    return calcularHeuristica(estado) == 0;
 }
 
 void atualizarCustos(No &vizinho, No *atual){
@@ -134,24 +135,15 @@ vector<No> gerarVizinhos(No *atual){
 
 }
 
-bool estadoObjetivo(vector<int> estado){
-    if(calcularHeuristica(estado) == 0){
-        return true
-    }
-
-}
-
-void processarVizinhos( No &vizinho,No *atual, priority_queue<No, vector<No>, Comparador> &open, vector<No> &closed){
 
 
-}
 
 
 
 MetricasAestrela a_estrela(int n_rainhas, const vector<int>&estadoInicial){
 
     //variaveis de metrica
-    long long nosGerados = 1;      // nó inicial
+    long long nosGerados = 0;      // nó inicial
     long long nosExpandidos = 0;
 
     //FILA DE PRIORIDADE q ordena de acordo com o f
@@ -197,7 +189,17 @@ MetricasAestrela a_estrela(int n_rainhas, const vector<int>&estadoInicial){
         //insere na listaFechada o estado atual
         listaFechada.insert(noAtual.estado);
 
-        //gerar vizinhos
+        vector<No> vizinhos = gerarVizinhos(&noAtual);
+
+        for (int i = 0; i < vizinhos.size(); i++)
+        {
+
+            /* code */
+        }
+        
+        
+
+        
         
 
         

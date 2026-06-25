@@ -1,120 +1,90 @@
-FUNÇÃO POSICAO_VALIDA(estado, linha, coluna)
+Função CalcularHeuristica(estado)
 
-    PARA i ← 0 ATÉ tamanho(estado)-1 FAÇA
+    N ← tamanho do estado
 
-        colunaRainha ← estado[i]
+    criar vetor conflito[N]
 
-        SE colunaRainha = coluna ENTÃO
-            RETORNE FALSO
+    para i ← 0 até N-1 faça
+        conflito[i] ← falso
 
-        SE ABS(linha - i) =
-           ABS(coluna - colunaRainha) ENTÃO
-            RETORNE FALSO
+    para i ← 0 até N-1 faça
 
-    FIM PARA
+        para j ← i+1 até N-1 faça
 
-    RETORNE VERDADEIRO
+            se estado[i] = estado[j] então
 
-FIM FUNÇÃO
+                conflito[i] ← verdadeiro
+                conflito[j] ← verdadeiro
 
-FUNÇÃO CONFLITOS_FUTUROS(estado, N)
+            se abs(i-j) = abs(estado[i]-estado[j]) então
 
-    conflitos ← 0
+                conflito[i] ← verdadeiro
+                conflito[j] ← verdadeiro
 
-    linhaAtual ← tamanho(estado)
+    h ← 0
 
-    PARA linha ← linhaAtual ATÉ N-1 FAÇA
+    para i ← 0 até N-1 faça
 
-        PARA coluna ← 0 ATÉ N-1 FAÇA
+        se conflito[i] = verdadeiro então
+            h ← h + 1
 
-            SE NÃO POSICAO_VALIDA(
-                    estado,
-                    linha,
-                    coluna
-               ) ENTÃO
+    retornar h
 
-                conflitos ← conflitos + 1
 
-            FIM SE
+Função EhObjetivo(estado)
 
-        FIM PARA
+  Função AtualizarCustos(vizinho, atual)
 
-    FIM PARA
+    vizinho.g ← atual.g + 1
 
-    RETORNE conflitos
+    vizinho.h ← CalcularHeuristica(vizinho.estado)
 
-FIM FUNÇÃO
+    vizinho.f ← vizinho.g + vizinho.h
 
-ALGORITMO A_ESTRELA(N)
+    vizinho.pai ← atual  retornar (CalcularConflitos(estado) = 0)
 
-    OPEN ← fila de prioridade
-    CLOSED ← conjunto vazio
 
-    estadoInicial ← []
+Função AStar(N)
 
-    nóInicial.estado ← estadoInicial
+    estadoInicial ← GerarEstadoInicial(N)
+
     nóInicial.g ← 0
+    nóInicial.h ← CalcularHeuristica(estadoInicial)
+    nóInicial.f ← nóInicial.g + nóInicial.h
 
-    nóInicial.h ←
-        CONFLITOS_FUTUROS(estadoInicial, N)
+    listaAberta ← { nóInicial }
 
-    nóInicial.f ←
-        nóInicial.g + nóInicial.h
+    listaFechada ← { }
 
-    INSERIR nóInicial em OPEN
+    enquanto listaAberta não estiver vazia faça
 
-    ENQUANTO OPEN não estiver vazia FAÇA
+        atual ← ObterMenorF(listaAberta)
 
-        atual ← REMOVER_MENOR_F(OPEN)
+        se EhObjetivo(atual.estado) então
 
-        SE tamanho(atual.estado) = N ENTÃO
-            RETORNE atual
+            retornar SUCESSO
 
-        INSERIR atual.estado em CLOSED
+        mover atual para listaFechada
 
-        linha ← tamanho(atual.estado)
+        vizinhos ← GerarVizinhos(atual)
 
-        PARA coluna ← 0 ATÉ N-1 FAÇA
+        para cada vizinho faça
 
-            SE POSICAO_VALIDA(
-                   atual.estado,
-                   linha,
-                   coluna
-               ) ENTÃO
+            ProcessarVizinho(vizinho, atual,
+                             listaAberta,
+                             listaFechada)
 
-                filho.estado ←
-                    COPIAR(atual.estado)
+Função ProcessarVizinho(vizinho,
+                        atual,
+                        listaAberta,
+                        listaFechada)
 
-                ADICIONAR coluna
-                    EM filho.estado
+    se vizinho.estado pertence à listaFechada então
 
-                SE filho.estado NÃO ESTÁ
-                   EM CLOSED ENTÃO
+        retornar
 
-                    filho.g ←
-                        atual.g + 1
+    AtualizarCustos(vizinho, atual)
 
-                    filho.h ←
-                        CONFLITOS_FUTUROS(
-                            filho.estado,
-                            N
-                        )
+    inserir vizinho na listaAberta
 
-                    filho.f ←
-                        filho.g + filho.h
-
-                    filho.pai ← atual
-
-                    INSERIR filho EM OPEN
-
-                FIM SE
-
-            FIM SE
-
-        FIM PARA
-
-    FIM ENQUANTO
-
-    RETORNE FALHA
-
-FIM ALGORITMO
+    
