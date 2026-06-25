@@ -155,7 +155,7 @@ MetricasAestrela a_estrela(int n_rainhas, const vector<int>&estadoInicial){
     //definindo valores do estado inicial
     noInicial.estado = estadoInicial;
     noInicial.g = 0;
-    noInicial.h = conflitos_futuros(n_rainhas,estadoInicial);
+    noInicial.h = calcularHeuristica(estadoInicial);
     noInicial.f = noInicial.g + noInicial.h;
 
     //inserindo estado inicial
@@ -187,12 +187,6 @@ MetricasAestrela a_estrela(int n_rainhas, const vector<int>&estadoInicial){
         listaFechada.insert(noAtual.estado);
 
         vector<No> vizinhos = gerarVizinhos(&noAtual);
-
-        for (int i = 0; i < vizinhos.size(); i++)
-        {
-
-            /* code */
-        }
         
         
 
