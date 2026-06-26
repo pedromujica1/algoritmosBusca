@@ -87,4 +87,42 @@ Função ProcessarVizinho(vizinho,
 
     inserir vizinho na listaAberta
 
-    
+
+A* CLASSICO
+
+Gera vizinho
+
+↓
+
+Está na CLOSED?
+↓
+
+Sim → ignora
+
+↓
+
+Não
+
+↓
+
+Já está na OPEN?
+
+↓
+
+Sim
+
+↓
+
+Esse caminho é melhor?
+
+↓
+
+Atualiza g,h,f
+
+↓
+
+Não
+
+↓
+
+Insere na OPEN

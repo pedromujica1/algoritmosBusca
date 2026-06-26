@@ -23,7 +23,6 @@ int calcularConflito(const vector<int>& vetor, int n) {
 
 //gera um estado inicial totalmente aleatório
 vector<int> gerarEstadoAleatorio(int n, mt19937& rng) {
-
     vector<int> vetor(n);
 
     uniform_int_distribution<int> dist(0, n - 1);
@@ -34,6 +33,7 @@ vector<int> gerarEstadoAleatorio(int n, mt19937& rng) {
 
     return vetor;
 }
+
 //encontra o melhor vizinho modificando apenas uma rainha por vez
 void encontrarMelhorVizinho(const vector<int>& vetor, int n, vector<int>& melhorVizinho, int& melhorConflito, long long &nosGerados) {
     melhorVizinho = vetor;
@@ -80,14 +80,15 @@ void subidaMorroIngreme(vector<int>& vetor, int n, long long& nosGerados, long l
 }
 
 //gerenciador do Hill Climbing que aplica os reinícios caso trave
-MetricasHillClimbing executaHill_climbing(int n_rainhas, int seed) {
+MetricasHillClimbing executaHill_climbing(int n_rainhas) {
 
     auto inicio = chrono::high_resolution_clock::now();
-    //gerador de seed
-    //mt19937 rng(seed);
     
-    
-    mt19937 rng(seed);
+    //semente com Hardware para garantir alta randomicidade
+    unsigned int sementeGerada = rd();
+    //inicializa o gerador usando essa semente capturada
+    mt19937 rng(sementeGerada);
+
     long long nosGerados = 0;
     long long nosExpandidos = 0;
     int tentativas = 0;
@@ -99,7 +100,7 @@ MetricasHillClimbing executaHill_climbing(int n_rainhas, int seed) {
 
         vetor = gerarEstadoAleatorio(n_rainhas, rng);
 
-        // guarda apenas o primeiro estado inicial da execução
+        //guarda apenas o primeiro estado inicial da execução
         if(tentativas == 0){
             estadoInicial = vetor;
         }
@@ -124,19 +125,18 @@ MetricasHillClimbing executaHill_climbing(int n_rainhas, int seed) {
     resultado.nosExpandidos = nosExpandidos;
     resultado.reinicios = tentativas;
     resultado.tempoExecucaoMs = duracao.count();
+    resultado.sementeUsada = sementeGerada;
     return resultado;
   
 }
 
 vector<MetricasHillClimbing> benchmarkHill_climbing() {
 
-    int seeds[] = {42, 123, 456, 789, 2025};
-    vector<MetricasHillClimbing> resultados;
+    vector <MetricasHillClimbing> resultados;
+    int n_rainhas = 8;
 
-    for(int i = 0; i < 5; i++) {
-
-        MetricasHillClimbing resultado = executaHill_climbing(8, seeds[i]);
-
+    for(int i = 0; i < 5; i++) {       
+        MetricasHillClimbing resultado = executaHill_climbing(n_rainhas);
         resultados.push_back(resultado);
     }
 
