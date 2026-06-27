@@ -1,152 +1,218 @@
-    let initialLoaded = false;
-    let initialState = null;
+let initialLoaded = false;
+let initialState = null;
+let solving = false;
 
-    const initialBoard = document.getElementById("initialBoard");
-    const solutionBoard = document.getElementById("solutionBoard");
+const initialBoard = document.getElementById("initialBoard");
+const solutionBoard = document.getElementById("solutionBoard");
 
-    const solveBtnHill = document.getElementById("solveBtnHill");
-    const solveBtnA = document.getElementById("solveBtnA");
-    const iniciarEstadosBtn = document.getElementById("iniciarEstados")
+const solveBtnHill = document.getElementById("solveBtnHill");
+const solveBtnA = document.getElementById("solveBtnA");
+const iniciarEstadosBtn = document.getElementById("iniciarEstados");
 
-    createBoard(initialBoard);
-    createBoard(solutionBoard);
+createBoard(initialBoard);
+createBoard(solutionBoard);
 
-    async function requestHill() {
+async function requestHill() {
 
-        const response = await fetch(
-            "https://defensive-elaine-ifpr-d62571ec.koyeb.app/hill-climbing/8"
-        );
+    const response = await fetch(
+        "https://defensive-elaine-ifpr-d62571ec.koyeb.app/hill-climbing/8"
+    );
 
-        if (!response.ok) {
-            throw new Error(`Erro HTTP: ${response.status}`);
-        }
-
-        return await response.json();
+    if (!response.ok) {
+        throw new Error(`Erro HTTP: ${response.status}`);
     }
 
-    async function requestA() {
+    return await response.json();
+}
 
-        const response = await fetch(
-            "https://defensive-elaine-ifpr-d62571ec.koyeb.app/hill-climbing/8"
-        );
+async function requestA() {
 
-        if (!response.ok) {
-            throw new Error(`Erro HTTP: ${response.status}`);
-        }
+    const response = await fetch(
+        "https://defensive-elaine-ifpr-d62571ec.koyeb.app/hill-climbing/8"
+        // Troque para o endpoint do A* quando existir
+    );
 
-        return await response.json();
+    if (!response.ok) {
+        throw new Error(`Erro HTTP: ${response.status}`);
     }
 
-    iniciarEstadosBtn.addEventListener("click", async () => {
-        try {
-            clearQueens(initialBoard);
+    return await response.json();
+}
 
-            const resultado = await requestHill();
+function setButtonsEnabled(enabled) {
+    iniciarEstadosBtn.disabled = !enabled;
+    solveBtnHill.disabled = !enabled;
+    solveBtnA.disabled = !enabled;
+}
 
-            initialState = resultado.estado_inicial;
-            initialLoaded = true;
+iniciarEstadosBtn.addEventListener("click", async () => {
 
-            console.log("Estado inicial carregado:", initialState);
+    if (solving) return;
 
-            renderQueens(initialState, initialBoard);
+    solving = true;
+    setButtonsEnabled(false);
 
-        } catch (erro) {
-            console.error("Erro ao carregar estados iniciais:", erro);
-            alert("Erro ao carregar estados iniciais.");
-        }
-    });
+    try {
 
-    solveBtnHill.addEventListener("click", async () => {
+        clearQueens(initialBoard);
 
-        if (!initialLoaded) {
-            alert("Primeiro clique em 'Iniciar Estados'.");
-            return;
-        }
+        const resultado = await requestHill();
+
+        initialState = resultado.estado_inicial;
+        initialLoaded = true;
+
+        renderQueens(initialState, initialBoard);
+
+        // Limpa métricas e solução antiga
+        clearQueens(solutionBoard);
+
+    } catch (erro) {
+
+        console.error("Erro ao carregar estados iniciais:", erro);
+        alert("Erro ao carregar estados iniciais.");
+
+    } finally {
+
+        solving = false;
+        setButtonsEnabled(true);
+    }
+
+});
+
+solveBtnHill.addEventListener("click", async () => {
+
+    if (!initialLoaded) {
+        alert("Primeiro clique em 'Iniciar Estados'.");
+        return;
+    }
+
+    if (solving) return;
+
+    solving = true;
+    setButtonsEnabled(false);
+
+    try {
 
         clearQueens(solutionBoard);
 
-        try {
-            const resultado = await requestHill();
+        const resultado = await requestHill();
 
-            console.log("Resposta da API:", resultado);
+        renderQueens(resultado.solucao, solutionBoard);
+        renderMetrics(resultado);
 
-            renderQueens(resultado.solucao, solutionBoard);
+    } catch (erro) {
 
-        } catch (erro) {
-            console.error("Erro ao obter solução:", erro);
-        }
-    });
+        console.error("Erro ao obter solução:", erro);
 
-    solveBtnA.addEventListener("click", async () => {
+    } finally {
 
-        if (!initialLoaded) {
-            alert("Primeiro clique em 'Iniciar Estados'.");
-            return;
-        }
+        solving = false;
+        setButtonsEnabled(true);
+    }
+
+});
+
+solveBtnA.addEventListener("click", async () => {
+
+    if (!initialLoaded) {
+        alert("Primeiro clique em 'Iniciar Estados'.");
+        return;
+    }
+
+    if (solving) return;
+
+    solving = true;
+    setButtonsEnabled(false);
+
+    try {
 
         clearQueens(solutionBoard);
 
-        try {
-            const resultado = await requestA();
+        const resultado = await requestA();
 
-            console.log("Resposta da API:", resultado);
+        renderQueens(resultado.solucao, solutionBoard);
+        renderMetrics(resultado);
 
-            renderQueens(resultado.solucao, solutionBoard);
+    } catch (erro) {
 
-        } catch (erro) {
-            console.error("Erro ao obter solução:", erro);
-        }
-    });
+        console.error("Erro ao obter solução:", erro);
 
-    function createBoard(boardElement) {
+    } finally {
 
-        for (let row = 0; row < 8; row++) {
+        solving = false;
+        setButtonsEnabled(true);
+    }
 
-            for (let col = 0; col < 8; col++) {
+});
 
-                const cell = document.createElement("div");
+function createBoard(boardElement) {
 
-                cell.classList.add("cell");
+    for (let row = 0; row < 8; row++) {
 
-                if ((row + col) % 2 === 0) {
-                    cell.classList.add("white");
-                } else {
-                    cell.classList.add("black");
-                }
+        for (let col = 0; col < 8; col++) {
 
-                cell.dataset.row = row;
-                cell.dataset.col = col;
+            const cell = document.createElement("div");
 
-                boardElement.appendChild(cell);
+            cell.classList.add("cell");
+
+            if ((row + col) % 2 === 0) {
+                cell.classList.add("white");
+            } else {
+                cell.classList.add("black");
             }
+
+            cell.dataset.row = row;
+            cell.dataset.col = col;
+
+            boardElement.appendChild(cell);
         }
     }
+}
 
-    function renderQueens(solution, boardElement) {
+function renderQueens(solution, boardElement) {
 
-        solution.forEach((col, row) => {
+    solution.forEach((col, row) => {
 
-            const cell = boardElement.querySelector(
-                `[data-row="${row}"][data-col="${col}"]`
-            );
+        const cell = boardElement.querySelector(
+            `[data-row="${row}"][data-col="${col}"]`
+        );
 
-            if (!cell) return;
+        if (!cell) return;
 
-            const img = document.createElement("img");
+        const img = document.createElement("img");
 
-            img.src = "assets/queen.png";
-            img.alt = "Rainha";
-            img.classList.add("queen");
+        img.src = "assets/queen.png";
+        img.alt = "Rainha";
+        img.classList.add("queen");
 
-            cell.appendChild(img);
-        });
-    }
+        cell.appendChild(img);
+    });
+}
 
-    function clearQueens(boardElement) {
+function clearQueens(boardElement) {
 
-        if (!boardElement) return;
+    if (!boardElement) return;
 
-        boardElement
-            .querySelectorAll(".queen")
-            .forEach(q => q.remove());
-    }
+    boardElement.querySelectorAll(".queen").forEach(q => q.remove());
+}
+
+function renderMetrics(resultado) {
+
+    document.getElementById("status").textContent =
+        resultado.status;
+
+    document.getElementById("tempoExecucao").textContent =
+        `${resultado.metricas.tempo_execucao_ms} ms`;
+
+    document.getElementById("reinicios").textContent =
+        resultado.metricas.reinicios;
+
+    document.getElementById("nosExpandidos").textContent =
+        resultado.metricas.nos_expandidos;
+
+    document.getElementById("nosGerados").textContent =
+        resultado.metricas.nos_gerados;
+
+    document.getElementById("nRainhas").textContent =
+        resultado.n_rainhas;
+}
