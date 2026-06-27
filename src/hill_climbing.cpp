@@ -85,7 +85,8 @@ void subidaMorroIngreme(vector<int>& vetor, int n, long long& nosGerados, long l
 MetricasHillClimbing executaHill_climbing(int n_rainhas, const vector<int> &estadoInicial) {
 
     auto inicio = chrono::high_resolution_clock::now();
-    
+
+    random_device rd;
     //semente com Hardware para garantir alta randomicidade
     unsigned int sementeGerada = rd();
     //inicializa o gerador usando essa semente capturada
