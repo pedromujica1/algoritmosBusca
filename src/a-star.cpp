@@ -21,7 +21,7 @@ vector<int> gerarEstadoAleatorio(int n, mt19937& rng) {
 }
 
 
-bool estadoObjetivo(const vector<int> &estado){
+bool estadoObjetivo(const vector<int> const &estado){
     return calcularHeuristica(estado) == 0;
 }
 
@@ -34,7 +34,7 @@ void atualizarCustos(No &vizinho, No *atual){
 }
 
 
-void desenhar_tabuleiro(const vector<int> &estado){
+void desenhar_tabuleiro(const vector<int> const &estado){
     int n = estado.size();
 
     cout << "\nTabuleiro (" << n << "x" << n << ")\n\n";
