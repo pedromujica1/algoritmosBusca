@@ -8,6 +8,32 @@
 #include <chrono>
 using namespace std;
 
+vector<int> gerarEstadoAleatorio(int n, mt19937& rng) {
+    vector<int> vetor(n);
+
+    uniform_int_distribution<int> dist(0, n - 1);
+
+    for(int i = 0; i < n; i++) {
+        vetor[i] = dist(rng);
+    }
+
+    return vetor;
+}
+
+
+bool estadoObjetivo(const vector<int> &estado){
+    return calcularHeuristica(estado) == 0;
+}
+
+void atualizarCustos(No &vizinho, No *atual){
+    vizinho.g = atual->g + 1;
+
+    vizinho.h = calcularHeuristica(vizinho.estado);
+
+    vizinho.f = vizinho.g + vizinho.h;
+}
+
+
 void desenhar_tabuleiro(const vector<int> &estado){
     int n = estado.size();
 
@@ -38,8 +64,8 @@ int calcularHeuristica(const  vector<int> &estado){
     vector<bool> conflito(N, false);
 
     //encontra conflitos
-    for (int i = 0; i < N - 1; ++i) {
-        for (int j = i + 1; j < N; ++j) {
+    for (int i = 0; i < N - 1; i++) {
+        for (int j = i + 1; j < N; j++) {
             
             //verificação de mesma linha
             if (estado[i] == estado[j]) {
@@ -55,7 +81,7 @@ int calcularHeuristica(const  vector<int> &estado){
         }
     }
 
-    //Contagem de quantas rainhas estão em conflito
+    //contagem de quantas rainhas estão em conflito
     int cont_conflitos = 0;
     for (int i = 0; i < N; ++i) {
         if (conflito[i]) {
@@ -66,30 +92,6 @@ int calcularHeuristica(const  vector<int> &estado){
     return cont_conflitos;
 }
 
-vector<int> gerarEstadoAleatorio(int n, mt19937& rng) {
-    vector<int> vetor(n);
-
-    uniform_int_distribution<int> dist(0, n - 1);
-
-    for(int i = 0; i < n; i++) {
-        vetor[i] = dist(rng);
-    }
-
-    return vetor;
-}
-
-bool estadoObjetivo(const vector<int> &estado){
-    return calcularHeuristica(estado) == 0;
-}
-
-void atualizarCustos(No &vizinho, No *atual){
-    vizinho.g = atual->g + 1;
-
-    vizinho.h = calcularHeuristica(vizinho.estado);
-
-    vizinho.f = vizinho.g + vizinho.h;
-
-}
 
 vector<No> gerarVizinhos(No *atual){
 
@@ -97,13 +99,14 @@ vector<No> gerarVizinhos(No *atual){
 
     int N = atual->estado.size();
 
-    for(int linha=0; linha<N; linha++)
-    {
+    for(int linha=0; linha<N; linha++){
         int colunaAtual = atual->estado[linha];
 
         for(int coluna=0; coluna<N; coluna++){
-            if(coluna == colunaAtual)
+            
+            if(coluna == colunaAtual){
                 continue;
+            }
 
             No novoVizinho;
 
@@ -216,6 +219,20 @@ MetricasAestrela executar_a_estrela(int n_rainhas) {
     resultado.sementeUsada = sementeGerada;
     return resultado;
 }
+
+vector<MetricasAestrela> benchmark_Aestrela(){
+
+    vector <MetricasAestrela> resultados;
+    int n_rainhas = 8;
+
+    for(int i = 0; i < 5; i++) {       
+        MetricasAestrela resultado = executaHill_climbing(n_rainhas);
+        resultados.push_back(resultado);
+    }
+
+    return resultados;
+}
+
 
 int main() {
 

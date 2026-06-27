@@ -36,11 +36,32 @@ int main(){
 
     auto& cors = app.get_middleware<crow::CORSHandler>();
 
-    // Configura as regras CORS globais
-    cors.global()
-        .origin("*") // Permite requisições de qualquer domínio
-        .methods("POST"_method, "GET"_method, "PUT"_method, "DELETE"_method) // Métodos HTTP permitidos
-        .headers("Content-Type", "Authorization"); // Cabeçalhos permitidos
+    //configura CORS para permitir requisições no FRONT-END
+    //permite todas as origens, metódos POST/GET/PUT/DELETE e header de Content-type  permitidos
+    cors.global().origin("*").methods("POST"_method, "GET"_method, "PUT"_method, "DELETE"_method).headers("Content-Type", "Authorization"); 
+
+    CROW_ROUTE(app, "/estado-inicial/<int>")([](int n){
+        
+        //verificação de erro
+        if (n <= 0 || n > 15) { 
+            resposta["status"] = "erro";
+            resposta["mensagem"] = "Por favor, insira um N válido.";
+            return resposta;
+        }
+
+        //inicialização segura do gerador de números aleatórios via Hardware
+        random_device rd;
+        mt19937 rng(rd());
+        //gerando estado inicial aleatorio
+        vector<int> estadoAleatorio = gerarEstadoAleatorio(n, rng); 
+
+        //monta JSON
+        resposta["n_rainhas"] = n;
+        resposta["estado_inicial"] = estadoAleatorio; // O Crow converte std::vector automaticamente para array JSON
+
+        return resposta;
+    });
+
 
 
     //rota para executar a-estrela.
@@ -66,18 +87,29 @@ int main(){
         return resposta;
     });
 
-    CROW_ROUTE(app, "/hill-climbing/<int>")([](int n){
+    CROW_ROUTE(app, "/hill-climbing/<int>").methods(crow::HTTPMethod::POST)([](const crow::request& req)([](int n){
+        //objeto json do crow
         crow::json::wvalue resposta;
 
-        if (n <= 3 || n > 8) { 
+        //parse do Json enviado pelo front end
+        auto dados_recebidos = crow::json::load(req.body);
+        if (!dados_recebidos || !dados_recebidos.has("estado_inicial")) {
             resposta["status"] = "erro";
-            resposta["mensagem"] = "Por favor, use um N válido (ex: entre 4 e 20).";
+            resposta["mensagem"] = "JSON inválido ou campo 'estado_inicial' ausente.";
             return resposta;
         }
 
-        //executa a busca estruturada
-        MetricasHillClimbing resultado = executaHill_climbing(n);
+        //converte array do json para vector
+        vector<int> estadoInicial;
+        for (const auto& item : dados_recebidos["estado_inicial"]) {
+            estadoInicial.push_back(item.i());
+        }
+        
+        int n = estadoInicial.size();
 
+        // Executa a nossa função refatorada passando o vetor recebido
+        MetricasHillClimbing resultado = executaHill_climbing(n, estadoInicial);
+        
         resposta["status"] = "sucesso";
         resposta["estado_inicial"] = resultado.solucaoInicial;
         resposta["n_rainhas"] = n;
@@ -92,18 +124,19 @@ int main(){
 
     CROW_ROUTE(app, "/hill-climbing/benchmark")([](){
 
-        vector<MetricasHillClimbing> resultados = benchmarkHill_climbing();
-
+       vector<MetricasHillClimbing> resultados = benchmarkHill_climbing();
+        //objeto json
         crow::json::wvalue resposta;
         resposta["status"] = "sucesso";
 
         crow::json::wvalue::list lista;
 
         for(const MetricasHillClimbing &resultado : resultados){
+            //conversao do json
             lista.push_back(converteParaJson(resultado));
         }
 
-        resposta["resultados"] = std::move(lista);
+        resposta["resultados"] = move(lista);
 
         return resposta;
     });

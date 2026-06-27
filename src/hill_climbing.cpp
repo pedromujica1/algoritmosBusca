@@ -1,10 +1,25 @@
 #include "hill_climbing.h"
+#include "astar.h"
 #include <iostream>
 #include <cmath>
 #include <cstdlib>
 #include <chrono>
 #include <random>
 using namespace std;
+
+
+vector<int> gerarEstadoAleatorio(int n, mt19937& rng) {
+    vector<int> vetor(n);
+
+    uniform_int_distribution<int> dist(0, n - 1);
+
+    for(int i = 0; i < n; i++) {
+        vetor[i] = dist(rng);
+    }
+
+    return vetor;
+}
+
 
 //calcula a quantidade total de conflitos do tabuleiro
 int calcularConflito(const vector<int>& vetor, int n) { 
@@ -19,19 +34,6 @@ int calcularConflito(const vector<int>& vetor, int n) {
         }
     }
     return conflitos;
-}
-
-//gera um estado inicial totalmente aleatório
-vector<int> gerarEstadoAleatorio(int n, mt19937& rng) {
-    vector<int> vetor(n);
-
-    uniform_int_distribution<int> dist(0, n - 1);
-
-    for(int i = 0; i < n; i++) {
-        vetor[i] = dist(rng);
-    }
-
-    return vetor;
 }
 
 //encontra o melhor vizinho modificando apenas uma rainha por vez
@@ -80,7 +82,7 @@ void subidaMorroIngreme(vector<int>& vetor, int n, long long& nosGerados, long l
 }
 
 //gerenciador do Hill Climbing que aplica os reinícios caso trave
-MetricasHillClimbing executaHill_climbing(int n_rainhas) {
+MetricasHillClimbing executaHill_climbing(int n_rainhas, const vector<int> &estadoInicial) {
 
     auto inicio = chrono::high_resolution_clock::now();
     
@@ -93,18 +95,16 @@ MetricasHillClimbing executaHill_climbing(int n_rainhas) {
     long long nosExpandidos = 0;
     int tentativas = 0;
 
-    vector<int> vetor;
-    vector<int> estadoInicial;
+    //vetor do usuario
+    vector<int> vetor = estadoInicial;
 
     while(true){
 
-        vetor = gerarEstadoAleatorio(n_rainhas, rng);
-
-        //guarda apenas o primeiro estado inicial da execução
-        if(tentativas == 0){
-            estadoInicial = vetor;
+        //na primeira tentativa, usamos o vetor do usuário.
+        //se trava é gerado um novamente
+        if (tentativas > 0) {
+            vetor = gerarEstadoAleatorio(n_rainhas, rng);
         }
-
         tentativas++;
 
         subidaMorroIngreme(vetor,n_rainhas,nosGerados,nosExpandidos);
@@ -123,7 +123,7 @@ MetricasHillClimbing executaHill_climbing(int n_rainhas) {
     resultado.solucao = vetor;
     resultado.nosGerados = nosGerados;
     resultado.nosExpandidos = nosExpandidos;
-    resultado.reinicios = tentativas;
+    resultado.reinicios = tentativas-1;
     resultado.tempoExecucaoMs = duracao.count();
     resultado.sementeUsada = sementeGerada;
     return resultado;
@@ -131,12 +131,19 @@ MetricasHillClimbing executaHill_climbing(int n_rainhas) {
 }
 
 vector<MetricasHillClimbing> benchmarkHill_climbing() {
-
-    vector <MetricasHillClimbing> resultados;
+    
+    vector<MetricasHillClimbing> resultados;
     int n_rainhas = 8;
 
+    random_device rd;
+    mt19937 rng(rd());
+
     for(int i = 0; i < 5; i++) {       
-        MetricasHillClimbing resultado = executaHill_climbing(n_rainhas);
+        //gera estadios iniciais
+        vector<int> estadoInicialParaTeste = gerarEstadoAleatorio(n_rainhas, rng);
+
+        //passa resultado pra execução
+        MetricasHillClimbing resultado = executaHill_climbing(n_rainhas, estadoInicialParaTeste);
         resultados.push_back(resultado);
     }
 

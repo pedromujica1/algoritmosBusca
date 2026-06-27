@@ -33,5 +33,7 @@ struct MetricasAestrela{
 };
 
 //FUNÇÃO Q executa o algoritmo
+vector<int> gerarEstadoAleatorio(int n, mt19937& rng)
 MetricasAestrela executar_a_estrela(int n_rainhas);
+vector<MetricasAestrela> benchmark_Aestrela()
 #endif
