@@ -9,38 +9,45 @@
 #include <chrono>
 #include <crow/middlewares/cors.h>
 using namespace std;
+using namespace crow;
 //incluindo arquivo de cabeçalho dos dois algoritmos
-#include "src/astar.h"
-#include "src/hill_climbing.h"
+#include "src/estruturas.h"
 
 
-//função que converte para json
-crow::json::wvalue converteParaJson(const MetricasHillClimbing &resultado){
-
-    crow::json::wvalue item;
-
+json::wvalue converteParaJson(const MetricasBusca &resultado, int id_algoritmo){
+    json::wvalue item;
     item["estado_inicial"] = resultado.solucaoInicial;
     item["solucao"] = resultado.solucao;
-    item["seed"] = resultado.seed;
+    item["seed"] = resultado.sementeUsada;
     item["tempo_ms"] = resultado.tempoExecucaoMs;
     item["nos_gerados"] = resultado.nosGerados;
     item["nos_expandidos"] = resultado.nosExpandidos;
-    item["reinicios"] = resultado.reinicios;
-
+    
+    //siginifica que está rodando o A*
+    if(id_algoritmo  == 1){
+        item["reinicios"] = 0; //A* não possui reinícios
+    }
+    else{//siginifica que está rodando o Hill Climbing
+        item["reinicios"] = resultado.reiniciosHill; 
+    }
+    
     return item;
 }
 
 int main(){
     //definindo uma instancia app
-    crow::SimpleApp app;
+    SimpleApp app;
 
-    auto& cors = app.get_middleware<crow::CORSHandler>();
+    auto &cors = app.get_middleware<CORSHandler>();
 
     //configura CORS para permitir requisições no FRONT-END
     //permite todas as origens, metódos POST/GET/PUT/DELETE e header de Content-type  permitidos
     cors.global().origin("*").methods("POST"_method, "GET"_method, "PUT"_method, "DELETE"_method).headers("Content-Type", "Authorization"); 
 
     CROW_ROUTE(app, "/estado-inicial/<int>")([](int n){
+
+        //corpo JSON
+        json::wvalue resposta;
         
         //verificação de erro
         if (n <= 0 || n > 15) { 
@@ -63,10 +70,10 @@ int main(){
     });
 
 
-
     //rota para executar a-estrela.
-    CROW_ROUTE(app, "/a-estrela/<int>").methods(crow::HTTPMethod::POST)([](const crow::request& req)([](int n){
-        crow::json::wvalue resposta;
+    //recebe vetor json como entrada
+    CROW_ROUTE(app, "/a-estrela/<int>").methods(HTTPMethod::POST)([](const request& req, int n_rainhas){
+        json::wvalue resposta;
 
         if (n <= 0 || n > 15) { 
             resposta["status"] = "erro";
@@ -74,7 +81,7 @@ int main(){
             return resposta;
         }
 
-        auto dados_recebidos = crow::json::load(req.body);
+        auto dados_recebidos = json::load(req.body);
         if (!dados_recebidos || !dados_recebidos.has("estado_inicial")) {
             resposta["status"] = "erro";
             resposta["mensagem"] = "JSON inválido ou campo 'estado_inicial' ausente.";
@@ -87,15 +94,8 @@ int main(){
             estadoInicial.push_back(item.i());
         }
         
-        int n = estadoInicial.size();
-        if (n <= 0 || n > 15) { 
-            resposta["status"] = "erro";
-            resposta["mensagem"] = "Tamanho do tabuleiro inválido.";
-            return resposta;
-        }
-
         //chamada da função modificada
-        MetricasAestrela resultado = executar_a_estrela(n, estadoInicial); 
+        MetricasBusca resposta = executarA_star(n_rainhas,estadoInicial); 
 
         resposta["status"] = "sucesso";
         resposta["n_rainhas"] = n;
@@ -104,17 +104,19 @@ int main(){
         resposta["metricas"]["nos_gerados"] = resultado.nosGerados;
         resposta["metricas"]["nos_expandidos"] = resultado.nosExpandidos;
         resposta["metricas"]["tempo_execucao_ms"] = resultado.tempoExecucaoMs;
+        resposta["reinicios"] = 0;
         resposta["semente_registro"] = resultado.sementeUsada;
 
         return resposta;
     });
 
-    CROW_ROUTE(app, "/hill-climbing/<int>").methods(crow::HTTPMethod::POST)([](const crow::request& req)([](int n){
+
+    CROW_ROUTE(app, "/hill-climbing/<int>").methods(HTTPMethod::POST)([](const request& req, int n_rainhas){
         //objeto json do crow
-        crow::json::wvalue resposta;
+        json::wvalue resposta;
 
         //parse do Json enviado pelo front end
-        auto dados_recebidos = crow::json::load(req.body);
+        auto dados_recebidos = json::load(req.body);
         if (!dados_recebidos || !dados_recebidos.has("estado_inicial")) {
             resposta["status"] = "erro";
             resposta["mensagem"] = "JSON inválido ou campo 'estado_inicial' ausente.";
@@ -127,10 +129,8 @@ int main(){
             estadoInicial.push_back(item.i());
         }
         
-        int n = estadoInicial.size();
-
         // Executa a nossa função refatorada passando o vetor recebido
-        MetricasHillClimbing resultado = executaHill_climbing(n, estadoInicial);
+        MetricasBusca resultado = executaHill_climbing(n_rainhas, estadoInicial);
         
         resposta["status"] = "sucesso";
         resposta["estado_inicial"] = resultado.solucaoInicial;
@@ -146,16 +146,16 @@ int main(){
 
     CROW_ROUTE(app, "/hill-climbing/benchmark")([](){
 
-       vector<MetricasHillClimbing> resultados = benchmarkHill_climbing();
+       vector<MetricasBusca> resultados = benchmarkHill_climbing();
         //objeto json
-        crow::json::wvalue resposta;
+        json::wvalue resposta;
         resposta["status"] = "sucesso";
 
-        crow::json::wvalue::list lista;
+        json::wvalue::list lista;
 
-        for(const MetricasHillClimbing &resultado : resultados){
+        for(const MetricasBusca &resultado : resultados){
             //conversao do json
-            lista.push_back(converteParaJson(resultado));
+            lista.push_back(converteParaJson(resultado,0));
         }
 
         resposta["resultados"] = move(lista);
@@ -166,16 +166,16 @@ int main(){
   
     CROW_ROUTE(app, "/a-estrela/benchmark")([](){
         // Roda os 5 testes isolados com geração própria de estados
-        vector<MetricasAestrela> resultados = benchmark_Aestrela();
+        vector<MetricasBusca> resultados = benchmark_Aestrela();
 
-        crow::json::wvalue resposta;
+        json::wvalue resposta;
         resposta["status"] = "sucesso";
 
-        crow::json::wvalue::list lista;
+        json::wvalue::list lista;
 
-        for(const MetricasAestrela &resultado : resultados){
+        for(const MetricasBusca &resultado : resultados){
             // Usa a sua função utilitária de conversão (certifique-se que ela aceita MetricasAestrela)
-            lista.push_back(converteParaJson(resultado));
+            lista.push_back(converteParaJson(resultado,1));
         }
 
         resposta["resultados"] = std::move(lista);

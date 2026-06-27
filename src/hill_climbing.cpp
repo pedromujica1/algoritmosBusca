@@ -1,24 +1,10 @@
-#include "hill_climbing.h"
-#include "astar.h"
+#include "estruturas.h"
 #include <iostream>
 #include <cmath>
 #include <cstdlib>
 #include <chrono>
 #include <random>
 using namespace std;
-
-
-vector<int> gerarEstadoAleatorio(int n, mt19937& rng) {
-    vector<int> vetor(n);
-
-    uniform_int_distribution<int> dist(0, n - 1);
-
-    for(int i = 0; i < n; i++) {
-        vetor[i] = dist(rng);
-    }
-
-    return vetor;
-}
 
 
 //calcula a quantidade total de conflitos do tabuleiro
@@ -82,7 +68,7 @@ void subidaMorroIngreme(vector<int>& vetor, int n, long long& nosGerados, long l
 }
 
 //gerenciador do Hill Climbing que aplica os reinícios caso trave
-MetricasHillClimbing executaHill_climbing(int n_rainhas, const vector<int> &estadoInicial) {
+MetricasBusca executaHill_climbing(int n_rainhas, const vector<int> &estadoInicial) {
 
     auto inicio = chrono::high_resolution_clock::now();
 
@@ -118,7 +104,7 @@ MetricasHillClimbing executaHill_climbing(int n_rainhas, const vector<int> &esta
     auto fim = chrono::high_resolution_clock::now();
     auto duracao = chrono::duration_cast<chrono::milliseconds>(fim - inicio);
 
-    MetricasHillClimbing resultado;
+    MetricasBusca resultado;
 
     resultado.solucaoInicial = estadoInicial;
     resultado.solucao = vetor;
@@ -131,9 +117,9 @@ MetricasHillClimbing executaHill_climbing(int n_rainhas, const vector<int> &esta
   
 }
 
-vector<MetricasHillClimbing> benchmarkHill_climbing() {
+vector<MetricasBusca> benchmarkHill_climbing() {
     
-    vector<MetricasHillClimbing> resultados;
+    vector<MetricasBusca> resultados;
     int n_rainhas = 8;
 
     random_device rd;
@@ -144,7 +130,7 @@ vector<MetricasHillClimbing> benchmarkHill_climbing() {
         vector<int> estadoInicialParaTeste = gerarEstadoAleatorio(n_rainhas, rng);
 
         //passa resultado pra execução
-        MetricasHillClimbing resultado = executaHill_climbing(n_rainhas, estadoInicialParaTeste);
+        MetricasBusca resultado = executaHill_climbing(n_rainhas, estadoInicialParaTeste);
         resultados.push_back(resultado);
     }
 

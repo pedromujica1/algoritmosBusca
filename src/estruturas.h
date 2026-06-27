@@ -21,19 +21,24 @@ struct Comparador{
         return a.f > b.f;
     }
 };
-//stuct para guardas as metricas
-struct MetricasAestrela{
+
+struct MetricasBusca {
     vector<int> solucaoInicial;
     vector<int> solucao;
     long long nosGerados;
     long long nosExpandidos;
     long long tempoExecucaoMs;
-    int reinicios;
     unsigned int sementeUsada;
+    int reiniciosHill;
 };
 
-//FUNÇÃO Q executa o algoritmo
-vector<int> gerarEstadoAleatorio(int n, mt19937& rng)
-MetricasAestrela executar_a_estrela(int n_rainhas);
-vector<MetricasAestrela> benchmark_Aestrela()
+//FUNÇÃO Q executa o algoritmo A*
+vector<int> gerarEstadoAleatorio(int n, mt19937 &rng);
+MetricasBusca executarA_star(int n_rainhas, const vector<int> &estadoInicial);
+vector<MetricasBusca> benchmark_Aestrela();
+//função que executa Hill Climbing
+MetricasBusca executaHill_climbing(int n_rainhas);
+vector<MetricasBusca> benchmarkHill_climbing();
+
+
 #endif

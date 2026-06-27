@@ -1,4 +1,4 @@
-#include "astar.h"
+#include "estruturas.h"
 #include <iostream>
 #include <vector>
 #include <random>
@@ -122,7 +122,7 @@ vector<No> gerarVizinhos(No *atual){
 
 }
 
-MetricasAestrela a_estrela(int n_rainhas, const vector<int>& estadoInicial){
+MetricasBusca a_estrela(int n_rainhas, const vector<int>& estadoInicial){
 
     //variaveis de metrica
     long long nosGerados = 0;      // nó inicial
@@ -161,7 +161,7 @@ MetricasAestrela a_estrela(int n_rainhas, const vector<int>& estadoInicial){
         if(estadoObjetivo(posicoesAtuais)){
             
             //coleta resultados
-            MetricasAestrela resultado;
+            MetricasBusca resultado;
             resultado.solucaoInicial = estadoInicial;
             resultado.solucao = posicoesAtuais;
             resultado.nosGerados = nosGerados;
@@ -191,7 +191,7 @@ MetricasAestrela a_estrela(int n_rainhas, const vector<int>& estadoInicial){
         
     }
     //coleta resultados caso não tenha sido gerado nada 
-    MetricasAestrela resultado;
+    MetricasBusca resultado;
     resultado.solucao = estadoInicial;
     resultado.nosGerados = nosGerados;
     resultado.nosExpandidos = nosExpandidos;
@@ -199,7 +199,7 @@ MetricasAestrela a_estrela(int n_rainhas, const vector<int>& estadoInicial){
 }
 
 //função para medir tempo de execução
-MetricasAestrela executar_a_estrela(int n_rainhas, const vector<int>& estadoInicial) {
+MetricasBusca executarA_star(int n_rainhas, const vector<int>& estadoInicial) {
     auto inicio = chrono::high_resolution_clock::now();
     
     random_device rd;
@@ -207,7 +207,7 @@ MetricasAestrela executar_a_estrela(int n_rainhas, const vector<int>& estadoInic
     unsigned int sementeGerada = rd();
     
     //chamada de função
-    MetricasAestrela resultado = a_estrela(n_rainhas,estadoInicial);    
+    MetricasBusca resultado = a_estrela(n_rainhas,estadoInicial);    
 
     auto fim = chrono::high_resolution_clock::now();
     auto duracao = chrono::duration_cast<chrono::milliseconds>(fim - inicio);
@@ -217,8 +217,8 @@ MetricasAestrela executar_a_estrela(int n_rainhas, const vector<int>& estadoInic
     return resultado;
 }
 
-vector<MetricasAestrela> benchmark_Aestrela(){
-    vector<MetricasAestrela> resultados;
+vector<MetricasBusca> benchmark_Aestrela(){
+    vector<MetricasBusca> resultados;
     int n_rainhas = 8;
 
     random_device rd;
@@ -229,7 +229,7 @@ vector<MetricasAestrela> benchmark_Aestrela(){
         vector<int> estadoInicialParaTeste = gerarEstadoAleatorio(n_rainhas, rng);
 
         // CORRIGIDO: Estava chamando executaHill_climbing por engano!
-        MetricasAestrela resultado = executar_a_estrela(n_rainhas, estadoInicialParaTeste);
+        MetricasBusca resultado = executarA_star(n_rainhas, estadoInicialParaTeste);
         resultados.push_back(resultado);
     }
 }
@@ -239,7 +239,7 @@ int main() {
 
     int N = 8;
 
-    MetricasAestrela resultado = executar_a_estrela(N);
+    MetricasBusca resultado = executarA_star(N);
 
     cout << "===== RESULTADO A* =====\n\n";
 
