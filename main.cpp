@@ -65,7 +65,7 @@ int main(){
 
 
     //rota para executar a-estrela.
-    CROW_ROUTE(app, "/a-estrela/<int>")([](int n){
+    CROW_ROUTE(app, "/a-estrela/<int>").methods(crow::HTTPMethod::POST)([](const crow::request& req)([](int n){
         crow::json::wvalue resposta;
 
         if (n <= 0 || n > 15) { 
@@ -74,15 +74,37 @@ int main(){
             return resposta;
         }
 
-        //chamada de função
-        MetricasAestrela resultado = executar_a_estrela(n); 
+        auto dados_recebidos = crow::json::load(req.body);
+        if (!dados_recebidos || !dados_recebidos.has("estado_inicial")) {
+            resposta["status"] = "erro";
+            resposta["mensagem"] = "JSON inválido ou campo 'estado_inicial' ausente.";
+            return resposta;
+        }
+
+        //extrai o vetor enviado do front-end
+        vector<int> estadoInicial;
+        for (const auto& item : dados_recebidos["estado_inicial"]) {
+            estadoInicial.push_back(item.i());
+        }
+        
+        int n = estadoInicial.size();
+        if (n <= 0 || n > 15) { 
+            resposta["status"] = "erro";
+            resposta["mensagem"] = "Tamanho do tabuleiro inválido.";
+            return resposta;
+        }
+
+        //chamada da função modificada
+        MetricasAestrela resultado = executar_a_estrela(n, estadoInicial); 
 
         resposta["status"] = "sucesso";
         resposta["n_rainhas"] = n;
+        resposta["solucao_inicial"] = resultado.solucaoInicial;
         resposta["solucao"] = resultado.solucao;
         resposta["metricas"]["nos_gerados"] = resultado.nosGerados;
         resposta["metricas"]["nos_expandidos"] = resultado.nosExpandidos;
         resposta["metricas"]["tempo_execucao_ms"] = resultado.tempoExecucaoMs;
+        resposta["semente_registro"] = resultado.sementeUsada;
 
         return resposta;
     });
@@ -137,6 +159,26 @@ int main(){
         }
 
         resposta["resultados"] = move(lista);
+
+        return resposta;
+    });
+
+  
+    CROW_ROUTE(app, "/a-estrela/benchmark")([](){
+        // Roda os 5 testes isolados com geração própria de estados
+        vector<MetricasAestrela> resultados = benchmark_Aestrela();
+
+        crow::json::wvalue resposta;
+        resposta["status"] = "sucesso";
+
+        crow::json::wvalue::list lista;
+
+        for(const MetricasAestrela &resultado : resultados){
+            // Usa a sua função utilitária de conversão (certifique-se que ela aceita MetricasAestrela)
+            lista.push_back(converteParaJson(resultado));
+        }
+
+        resposta["resultados"] = std::move(lista);
 
         return resposta;
     });

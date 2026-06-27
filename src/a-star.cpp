@@ -122,7 +122,7 @@ vector<No> gerarVizinhos(No *atual){
 
 }
 
-MetricasAestrela a_estrela(int n_rainhas, vector<int>&estadoInicial){
+MetricasAestrela a_estrela(int n_rainhas, const vector<int>& estadoInicial){
 
     //variaveis de metrica
     long long nosGerados = 0;      // nó inicial
@@ -199,18 +199,15 @@ MetricasAestrela a_estrela(int n_rainhas, vector<int>&estadoInicial){
 }
 
 //função para medir tempo de execução
-MetricasAestrela executar_a_estrela(int n_rainhas) {
+MetricasAestrela executar_a_estrela(int n_rainhas, const vector<int>& estadoInicial) {
     auto inicio = chrono::high_resolution_clock::now();
     
     random_device rd;
     //semente com Hardware para garantir alta randomicidade
     unsigned int sementeGerada = rd();
-    //inicializa o gerador usando essa semente capturada
-    mt19937 rng(sementeGerada);
-
     
-    vector<int> estadoInicial = gerarEstadoAleatorio(n_rainhas, rng);
-    MetricasAestrela resultado = a_estrela(8,estadoInicial);    
+    //chamada de função
+    MetricasAestrela resultado = a_estrela(n_rainhas,estadoInicial);    
 
     auto fim = chrono::high_resolution_clock::now();
     auto duracao = chrono::duration_cast<chrono::milliseconds>(fim - inicio);
@@ -221,16 +218,20 @@ MetricasAestrela executar_a_estrela(int n_rainhas) {
 }
 
 vector<MetricasAestrela> benchmark_Aestrela(){
-
-    vector <MetricasAestrela> resultados;
+    vector<MetricasAestrela> resultados;
     int n_rainhas = 8;
 
+    random_device rd;
+    mt19937 rng(rd());
+
     for(int i = 0; i < 5; i++) {       
-        MetricasAestrela resultado = executaHill_climbing(n_rainhas);
+        // Cria um cenário de testes para o A*
+        vector<int> estadoInicialParaTeste = gerarEstadoAleatorio(n_rainhas, rng);
+
+        // CORRIGIDO: Estava chamando executaHill_climbing por engano!
+        MetricasAestrela resultado = executar_a_estrela(n_rainhas, estadoInicialParaTeste);
         resultados.push_back(resultado);
     }
-
-    return resultados;
 }
 
 
