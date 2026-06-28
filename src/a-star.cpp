@@ -4,9 +4,10 @@
 #include <random>
 #include <algorithm>
 #include <queue>
-#include <set>
+#include <map>
 #include <chrono>
 using namespace std;
+//g++ a-star.cpp estruturas.h -o a-star
 
 vector<int> gerarEstadoAleatorio(int n, mt19937 &rng) {
     vector<int> vetor(n);
@@ -144,15 +145,25 @@ MetricasBusca a_estrela(int n_rainhas, const vector<int>& estadoInicial){
     noInicial.g = 0;
     noInicial.h = contarRainhasConflitantes(estadoInicial);
     noInicial.f = noInicial.g + noInicial.h;
+    noInicial.paiEstado.clear();
 
-    //inserindo estado inicial
+    //inserindo estado inicial na fila de prioridade e lista aberta
     filaPrioridade.push(noInicial);
+    listaAberta[noInicial.estado] = noInicial;
 
-    while (!listaAberta.empty()){
+
+    while (!filaPrioridade.empty()){
         //pega o nó inicial com a menor ponutação em f
         No noAtual = filaPrioridade.top();
         //retira o nó do topo
         filaPrioridade.pop();
+
+        //apagando da lista aberta tbm
+        listaAberta.erase(noAtual.estado);
+
+        //coloque o nó atual na lista fechada 
+        listaFechada[noAtual.estado] = noAtual;
+
         nosExpandidos++;
 
         //pega nó atual que acabou de ser removido do topo da pilha
@@ -170,8 +181,7 @@ MetricasBusca a_estrela(int n_rainhas, const vector<int>& estadoInicial){
             resultado.nosExpandidos = nosExpandidos;
             return resultado;
         }
-        //coloque o nó atual na lista fechada 
-        listaFechada.insert(noAtual.estado);
+        
 
         //observe todos os seus vizinhos
         //gerar vizinhos
@@ -180,18 +190,61 @@ MetricasBusca a_estrela(int n_rainhas, const vector<int>& estadoInicial){
         //processamento de vizinhos
         for (int i = 0; i < vizinhos.size(); i++){
 
+            //atualiza custos dos vizinhos
+            atualizarCustos(vizinhos[i], &noAtual);
+
             //verifica se vizinho pertence a lista fechada
             if (listaFechada.find(vizinhos[i].estado) != listaFechada.end()){
-                continue;
-            }
-           
+                
+                No &noFechado = listaFechada[vizinhos[i].estado];
+                //substitua o vizinho pelo novo valor mais baixo de g
+                if(vizinhos[i].g < noFechado.g){
+                    //no atual agora é pai do vizinho
+                    vizinhos[i].paiEstado = noAtual.estado;
+                    
+                    //atualiza estado e lista fechada
+                    listaFechada[vizinhos[i].estado] = vizinhos[i];
+                    //colocando novamente na lista aberta
+                    listaAberta[vizinhos[i].estado] = vizinhos[i];
 
-            atualizarCustos(vizinhos[i],&noAtual);
-            filaPrioridade.push(vizinhos[i]);
+                    //ATUALIZA FILA PRIORIDADE
+                    filaPrioridade.push(vizinhos[i]);
+
+                }
+            }
+            //verifica se vizinho pertence a lista aberta
+            else if (listaAberta.find(vizinhos[i].estado) != listaAberta.end()){
+
+                No &noAberto = listaAberta[vizinhos[i].estado];
+
+                if(vizinhos[i].g < noAberto.g){
+                    //altera pai do vizinho para nó atual
+                    vizinhos[i].paiEstado = noAtual.estado;
+                    //atualiza lista aberta
+                    listaAberta[vizinhos[i].estado] = vizinhos[i];
+                    
+                    //ATUALIZA FILA DE PRIORIDADE
+                    filaPrioridade.push(vizinhos[i]);
+                    
+                    
+                }
+                
+            }
+            //caso nó não esteja em nenhuma das listas
+            else{
+                //atualizar o pai
+                vizinhos[i].paiEstado = noAtual.estado;
+
+                //adciona na lista aberta e na fila de prioridades 
+                listaAberta[vizinhos[i].estado] = vizinhos[i];
+                        
+                filaPrioridade.push(vizinhos[i]);
+
+
+            }
             nosGerados++;
         }
-        
-        
+
     }
     //coleta resultados caso não tenha sido gerado nada 
     MetricasBusca resultado;

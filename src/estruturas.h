@@ -10,6 +10,7 @@ struct No{
     int g; //custo para chegar em determinado estado
     int h; //representa conflitos futuros
     int f; //soma de g + f
+    vector<int> paiEstado;
 };
 
 //comparador para fila de prioridade
