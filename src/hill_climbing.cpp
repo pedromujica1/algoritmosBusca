@@ -110,7 +110,7 @@ MetricasBusca executaHill_climbing(int n_rainhas, const vector<int> &estadoInici
     resultado.solucao = vetor;
     resultado.nosGerados = nosGerados;
     resultado.nosExpandidos = nosExpandidos;
-    resultado.reinicios = tentativas-1;
+    resultado.reiniciosHill = tentativas-1;
     resultado.tempoExecucaoMs = duracao.count();
     resultado.sementeUsada = sementeGerada;
     return resultado;

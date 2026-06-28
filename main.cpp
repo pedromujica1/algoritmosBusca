@@ -7,12 +7,10 @@
 #include <queue>
 #include <set>
 #include <chrono>
-#include <crow/middlewares/cors.h>
 using namespace std;
 using namespace crow;
 //incluindo arquivo de cabeçalho dos dois algoritmos
 #include "src/estruturas.h"
-
 
 json::wvalue converteParaJson(const MetricasBusca &resultado, int id_algoritmo){
     json::wvalue item;
@@ -36,9 +34,8 @@ json::wvalue converteParaJson(const MetricasBusca &resultado, int id_algoritmo){
 
 int main(){
     //definindo uma instancia app
-    SimpleApp app;
-
-    auto &cors = app.get_middleware<CORSHandler>();
+    crow::App<crow::CORSHandler> app; 
+    auto &cors = app.get_middleware<crow::CORSHandler>();
 
     //configura CORS para permitir requisições no FRONT-END
     //permite todas as origens, metódos POST/GET/PUT/DELETE e header de Content-type  permitidos
@@ -75,7 +72,7 @@ int main(){
     CROW_ROUTE(app, "/a-estrela/<int>").methods(HTTPMethod::POST)([](const request& req, int n_rainhas){
         json::wvalue resposta;
 
-        if (n <= 0 || n > 15) { 
+        if (n_rainhas <= 0 || n_rainhas > 15) { 
             resposta["status"] = "erro";
             resposta["mensagem"] = "Por favor, insira um N válido.";
             return resposta;
@@ -95,10 +92,9 @@ int main(){
         }
         
         //chamada da função modificada
-        MetricasBusca resposta = executarA_star(n_rainhas,estadoInicial); 
+        MetricasBusca resultado = executarA_star(estadoInicial); 
 
         resposta["status"] = "sucesso";
-        resposta["n_rainhas"] = n;
         resposta["solucao_inicial"] = resultado.solucaoInicial;
         resposta["solucao"] = resultado.solucao;
         resposta["metricas"]["nos_gerados"] = resultado.nosGerados;
@@ -134,11 +130,11 @@ int main(){
         
         resposta["status"] = "sucesso";
         resposta["estado_inicial"] = resultado.solucaoInicial;
-        resposta["n_rainhas"] = n;
+        resposta["n_rainhas"] = n_rainhas;
         resposta["solucao"] = resultado.solucao;
         resposta["metricas"]["nos_gerados"] = resultado.nosGerados;
         resposta["metricas"]["nos_expandidos"] = resultado.nosExpandidos;
-        resposta["metricas"]["reinicios"] = resultado.reinicios;
+        resposta["metricas"]["reinicios"] = resultado.reiniciosHill;
         resposta["metricas"]["tempo_execucao_ms"] = resultado.tempoExecucaoMs;
 
         return resposta;

@@ -124,7 +124,7 @@ void atualizarCustos(No &vizinho, No *atual){
     vizinho.f = vizinho.g + vizinho.h;
 }
 
-MetricasBusca a_estrela(int n_rainhas, const vector<int>& estadoInicial){
+MetricasBusca a_estrela(const vector<int>& estadoInicial){
 
     //variaveis de metrica
     long long nosGerados = 0;      // nó inicial
@@ -188,7 +188,8 @@ MetricasBusca a_estrela(int n_rainhas, const vector<int>& estadoInicial){
         vector<No>vizinhos = gerarVizinhos(&noAtual);
 
         //processamento de vizinhos
-        for (int i = 0; i < vizinhos.size(); i++){
+        //inteiro sem sinal para comparar com tamanho do vector
+        for (size_t i = 0; i < vizinhos.size(); i++){
 
             //atualiza custos dos vizinhos
             atualizarCustos(vizinhos[i], &noAtual);
@@ -255,7 +256,7 @@ MetricasBusca a_estrela(int n_rainhas, const vector<int>& estadoInicial){
 }
 
 //função para medir tempo de execução
-MetricasBusca executarA_star(int n_rainhas, const vector<int> &estadoInicial) {
+MetricasBusca executarA_star(const vector<int> &estadoInicial) {
     auto inicio = chrono::high_resolution_clock::now();
     
     random_device rd;
@@ -263,7 +264,7 @@ MetricasBusca executarA_star(int n_rainhas, const vector<int> &estadoInicial) {
     unsigned int sementeGerada = rd();
     
     //chamada de função
-    MetricasBusca resultado = a_estrela(n_rainhas,estadoInicial);    
+    MetricasBusca resultado = a_estrela(estadoInicial);    
 
     auto fim = chrono::high_resolution_clock::now();
     auto duracao = chrono::duration_cast<chrono::milliseconds>(fim - inicio);
@@ -285,7 +286,7 @@ vector<MetricasBusca> benchmark_Aestrela(){
         vector<int> estadoInicialParaTeste = gerarEstadoAleatorio(n_rainhas, rng);
 
         // CORRIGIDO: Estava chamando executaHill_climbing por engano!
-        MetricasBusca resultado = executarA_star(n_rainhas, estadoInicialParaTeste);
+        MetricasBusca resultado = executarA_star(estadoInicialParaTeste);
         resultados.push_back(resultado);
     }
     return resultados;

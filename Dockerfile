@@ -1,9 +1,7 @@
-# ==========================================
-# ETAPA 1: Compilação (Build) usando Alpine
-# ==========================================
+
 FROM alpine:3.19 AS builder
 
-# Instala ferramentas de compilação corretas do Alpine
+#Instala ferramentas de compilação corretas do Alpine
 RUN apk add --no-cache \
     build-base \
     boost-dev \
@@ -11,15 +9,13 @@ RUN apk add --no-cache \
 
 WORKDIR /app
 
-# Copia os arquivos do projeto
+#Copia os arquivos do projeto
 COPY . .
 
-# Executa o makefile (o binário será gerado nativamente para o ambiente Alpine)
+#executa o makefile (o binário será gerado nativamente para o ambiente Alpine)
 RUN make
 
-# ==========================================
-# ETAPA 2: Imagem Final de Execução (Super Leve)
-# ==========================================
+
 FROM alpine:3.19
 
 WORKDIR /app

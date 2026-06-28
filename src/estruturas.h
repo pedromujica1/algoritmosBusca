@@ -36,10 +36,10 @@ struct MetricasBusca {
 
 //FUNÇÃO Q executa o algoritmo A*
 vector<int> gerarEstadoAleatorio(int n, mt19937 &rng);
-MetricasBusca executarA_star(int n_rainhas, const vector<int> &estadoInicial);
+MetricasBusca executarA_star(const vector<int> &estadoInicial);
 vector<MetricasBusca> benchmark_Aestrela();
 //função que executa Hill Climbing
-MetricasBusca executaHill_climbing(int n_rainhas);
+MetricasBusca executaHill_climbing(int n_rainhas, const vector<int> &estadoInicial);
 vector<MetricasBusca> benchmarkHill_climbing();
 
 
