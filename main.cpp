@@ -126,7 +126,7 @@ int main(){
             estadoInicial.push_back(item.i());
         }
         
-        // Executa a nossa função refatorada passando o vetor recebido
+        //executa funcao
         MetricasBusca resultado = executaHill_climbing(n_rainhas, estadoInicial);
         
         resposta["status"] = "sucesso";
@@ -162,7 +162,7 @@ int main(){
 
   
     CROW_ROUTE(app, "/a-estrela/benchmark")([](){
-        // Roda os 5 testes isolados com geração própria de estados
+        
         vector<MetricasBusca> resultados = benchmark_Aestrela();
 
         json::wvalue resposta;
@@ -171,7 +171,7 @@ int main(){
         json::wvalue::list lista;
 
         for(const MetricasBusca &resultado : resultados){
-            // Usa a sua função utilitária de conversão (certifique-se que ela aceita MetricasAestrela)
+            
             lista.push_back(converteParaJson(resultado,1));
         }
 

@@ -282,10 +282,8 @@ vector<MetricasBusca> benchmark_Aestrela(){
     mt19937 rng(rd());
 
     for(int i = 0; i < 5; i++) {       
-        // Cria um cenário de testes para o A*
         vector<int> estadoInicialParaTeste = gerarEstadoAleatorio(n_rainhas, rng);
 
-        // CORRIGIDO: Estava chamando executaHill_climbing por engano!
         MetricasBusca resultado = executarA_star(estadoInicialParaTeste);
         resultados.push_back(resultado);
     }

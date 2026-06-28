@@ -20,12 +20,12 @@ FROM alpine:3.19
 
 WORKDIR /app
 
-# Instala apenas as dependências de execução em runtime
+#instala apenas as dependências de execução em runtime
 RUN apk add --no-cache \
     libstdc++ \
     boost-system
 
-# Copia apenas o executável final gerado na Etapa 1
+#copia apenas o executável final gerado na Etapa 1
 COPY --from=builder /app/servidor .
 
 EXPOSE 8000
