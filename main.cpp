@@ -40,7 +40,7 @@ int main(){
     //configura CORS para permitir requisições no FRONT-END
     //permite todas as origens, metódos POST/GET/PUT/DELETE e header de Content-type  permitidos
     cors.global().origin("*").methods("POST"_method, "GET"_method, "PUT"_method, "DELETE"_method).headers("Content-Type", "Authorization"); 
-
+    
     CROW_ROUTE(app, "/estado-inicial/<int>")([](int n){
 
         //corpo JSON
