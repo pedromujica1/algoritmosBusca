@@ -78,7 +78,7 @@ iniciarEstadosBtn.addEventListener("click", async () => {
         const resultado = await requestEstadoInicial();
 
         //equalidade estita
-        if (resultado.status === "sucesso") {
+        if (resultado && resultado.estado_inicial) {
             initialState = resultado.estado_inicial;
             initialLoaded = true;
             renderQueens(initialState, initialBoard);
@@ -122,7 +122,7 @@ solveBtnHill.addEventListener("click", async () => {
         //passa o estado inicial gerado pelo botao como parametro
         const resultado = await requestHill(initialState);
 
-        if (resultado.status === "sucesso") {
+        if (resultado && resultado.estado_inicial) {
             renderQueens(resultado.solucao, solutionBoard);
             renderMetrics(resultado, "hill-climbing");
         } else {
@@ -160,7 +160,7 @@ solveBtnA.addEventListener("click", async () => {
         //pega o estado inicial de entrada
         const resultado = await requestA(initialState);
 
-        if (resultado.status === "sucesso") {
+        if (resultado && resultado.estado_inicial) {
             renderQueens(resultado.solucao, solutionBoard);
             renderMetrics(resultado, "a-estrela");
         } else {
@@ -230,7 +230,7 @@ function clearQueens(boardElement) {
     boardElement.querySelectorAll(".queen").forEach(q => q.remove());
 }
 
-function renderMetrics(resultado) {
+function renderMetrics(resultado,tipoAlgoritmo) {
 
     document.getElementById("status").textContent =
         resultado.status;
@@ -249,7 +249,7 @@ function renderMetrics(resultado) {
 
     document.getElementById("nRainhas").textContent =
         resultado.n_rainhas;
-        
+
     if (tipoAlgoritmo === "a-estrela") {
         document.getElementById("reinicios").textContent = resultado.reinicios;
     } else {
