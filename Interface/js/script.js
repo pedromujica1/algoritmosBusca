@@ -122,7 +122,7 @@ solveBtnHill.addEventListener("click", async () => {
         //passa o estado inicial gerado pelo botao como parametro
         const resultado = await requestHill(initialState);
 
-        if (resultado && resultado.estado_inicial) {
+        if (resultado && resultado.status === "sucesso") {
             renderQueens(resultado.solucao, solutionBoard);
             renderMetrics(resultado, "hill-climbing");
         } else {
@@ -159,8 +159,9 @@ solveBtnA.addEventListener("click", async () => {
 
         //pega o estado inicial de entrada
         const resultado = await requestA(initialState);
+        console.log(resultado);
 
-        if (resultado && resultado.estado_inicial) {
+        if (resultado && resultado.status === "sucesso") {
             renderQueens(resultado.solucao, solutionBoard);
             renderMetrics(resultado, "a-estrela");
         } else {
