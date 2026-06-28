@@ -78,7 +78,9 @@ int main(){
             return resposta;
         }
 
+        //corpo json carregado e transcrito pelo crow
         auto dados_recebidos = json::load(req.body);
+        
         if (!dados_recebidos || !dados_recebidos.has("estado_inicial")) {
             resposta["status"] = "erro";
             resposta["mensagem"] = "JSON inválido ou campo 'estado_inicial' ausente.";
@@ -93,7 +95,6 @@ int main(){
         
         //chamada da função modificada
         MetricasBusca resultado = executarA_star(estadoInicial); 
-
         resposta["status"] = "sucesso";
         resposta["solucao_inicial"] = resultado.solucaoInicial;
         resposta["solucao"] = resultado.solucao;

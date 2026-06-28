@@ -2,6 +2,8 @@ let initialLoaded = false;
 let initialState = null;
 let solving = false;
 
+const URL_BASE = "https://defensive-elaine-ifpr-d62571ec.koyeb.app"
+
 const initialBoard = document.getElementById("initialBoard");
 const solutionBoard = document.getElementById("solutionBoard");
 
@@ -12,28 +14,45 @@ const iniciarEstadosBtn = document.getElementById("iniciarEstados");
 createBoard(initialBoard);
 createBoard(solutionBoard);
 
-async function requestHill() {
-
-    const response = await fetch(
-        "https://defensive-elaine-ifpr-d62571ec.koyeb.app/hill-climbing/8"
-    );
+async function requestEstadoInicial() {
+    const response = await fetch(`${URL_BASE}/estado-inicial/8`);
 
     if (!response.ok) {
-        throw new Error(`Erro HTTP: ${response.status}`);
+        throw new Error(`Erro HTTP ao gerar estado inicial: ${response.status}`);
     }
 
     return await response.json();
 }
 
-async function requestA() {
+async function requestHill(estado) {
 
-    const response = await fetch(
-        "https://defensive-elaine-ifpr-d62571ec.koyeb.app/hill-climbing/8"
-        // Troque para o endpoint do A* quando existir
-    );
+    const response = await fetch(`${URL_BASE}/hill-climbing/8`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ estado_inicial: estado }) // Envia o vetor como JSON
+    });
 
     if (!response.ok) {
-        throw new Error(`Erro HTTP: ${response.status}`);
+        throw new Error(`Erro HTTP no Hill Climbing: ${response.status}`);
+    }
+
+    return await response.json();
+}
+
+async function requestA(estado) {
+
+    const response = await fetch(`${URL_BASE}/a-estrela/8`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ estado_inicial: estado }) // Envia o vetor como JSON
+    });
+
+    if (!response.ok) {
+        throw new Error(`Erro HTTP no A*: ${response.status}`);
     }
 
     return await response.json();
@@ -56,14 +75,19 @@ iniciarEstadosBtn.addEventListener("click", async () => {
 
         clearQueens(initialBoard);
 
-        const resultado = await requestHill();
+        const resultado = await requestEstadoInicial();
 
-        initialState = resultado.estado_inicial;
-        initialLoaded = true;
+        //equalidade estita
+        if (resultado.status === "sucesso") {
+            initialState = resultado.estado_inicial;
+            initialLoaded = true;
+            renderQueens(initialState, initialBoard);
+        } else {
+            console.log("Erro da API: " + resultado.mensagem);
+        }
 
-        renderQueens(initialState, initialBoard);
-
-        // Limpa métricas e solução antiga
+     
+        //limpa métricas e solução antiga
         clearQueens(solutionBoard);
 
     } catch (erro) {
@@ -81,7 +105,7 @@ iniciarEstadosBtn.addEventListener("click", async () => {
 
 solveBtnHill.addEventListener("click", async () => {
 
-    if (!initialLoaded) {
+    if (!initialLoaded || !initialState ) {
         alert("Primeiro clique em 'Iniciar Estados'.");
         return;
     }
@@ -95,10 +119,15 @@ solveBtnHill.addEventListener("click", async () => {
 
         clearQueens(solutionBoard);
 
-        const resultado = await requestHill();
+        //passa o estado inicial gerado pelo botao como parametro
+        const resultado = await requestHill(initialState);
 
-        renderQueens(resultado.solucao, solutionBoard);
-        renderMetrics(resultado);
+        if (resultado.status === "sucesso") {
+            renderQueens(resultado.solucao, solutionBoard);
+            renderMetrics(resultado, "hill-climbing");
+        } else {
+            alert("Erro no algoritmo: " + resultado.mensagem);
+        }
 
     } catch (erro) {
 
@@ -114,7 +143,7 @@ solveBtnHill.addEventListener("click", async () => {
 
 solveBtnA.addEventListener("click", async () => {
 
-    if (!initialLoaded) {
+    if (!initialLoaded || !initialState) {
         alert("Primeiro clique em 'Iniciar Estados'.");
         return;
     }
@@ -128,10 +157,15 @@ solveBtnA.addEventListener("click", async () => {
 
         clearQueens(solutionBoard);
 
-        const resultado = await requestA();
+        //pega o estado inicial de entrada
+        const resultado = await requestA(initialState);
 
-        renderQueens(resultado.solucao, solutionBoard);
-        renderMetrics(resultado);
+        if (resultado.status === "sucesso") {
+            renderQueens(resultado.solucao, solutionBoard);
+            renderMetrics(resultado, "a-estrela");
+        } else {
+            alert("Erro no algoritmo: " + resultado.mensagem);
+        }
 
     } catch (erro) {
 
@@ -215,4 +249,10 @@ function renderMetrics(resultado) {
 
     document.getElementById("nRainhas").textContent =
         resultado.n_rainhas;
+        
+    if (tipoAlgoritmo === "a-estrela") {
+        document.getElementById("reinicios").textContent = resultado.reinicios;
+    } else {
+        document.getElementById("reinicios").textContent = resultado.metricas.reinicios;
+    }
 }
