@@ -8,7 +8,7 @@
 #include <chrono>
 using namespace std;
 
-vector<int> gerarEstadoAleatorio(int n, mt19937& rng) {
+vector<int> gerarEstadoAleatorio(int n, mt19937 &rng) {
     vector<int> vetor(n);
 
     uniform_int_distribution<int> dist(0, n - 1);
@@ -21,20 +21,7 @@ vector<int> gerarEstadoAleatorio(int n, mt19937& rng) {
 }
 
 
-bool estadoObjetivo(const vector<int> const &estado){
-    return calcularHeuristica(estado) == 0;
-}
-
-void atualizarCustos(No &vizinho, No *atual){
-    vizinho.g = atual->g + 1;
-
-    vizinho.h = calcularHeuristica(vizinho.estado);
-
-    vizinho.f = vizinho.g + vizinho.h;
-}
-
-
-void desenhar_tabuleiro(const vector<int> const &estado){
+void desenhar_tabuleiro(const vector<int> &estado){
     int n = estado.size();
 
     cout << "\nTabuleiro (" << n << "x" << n << ")\n\n";
@@ -57,7 +44,7 @@ void desenhar_tabuleiro(const vector<int> const &estado){
     }
 }
 
-int calcularHeuristica(const  vector<int> &estado){
+int contarRainhasConflitantes(const  vector<int> &estado){
     int N = estado.size();
 
     //inicialização do vetor com false
@@ -92,34 +79,48 @@ int calcularHeuristica(const  vector<int> &estado){
     return cont_conflitos;
 }
 
+//estado objetivo quando existirem 0 RAINHAS COM CONFLITO
+bool estadoObjetivo(const vector<int> &estado){
+    return contarRainhasConflitantes(estado) == 0;
+}
 
 vector<No> gerarVizinhos(No *atual){
-
     vector<No> vizinhos;
 
     int N = atual->estado.size();
-
+    //percorre cada linha
     for(int linha=0; linha<N; linha++){
+        //descobre a coluna atual;
         int colunaAtual = atual->estado[linha];
 
-        for(int coluna=0; coluna<N; coluna++){
+        //percorre pelas colunas da linha
+        for(int novaColuna=0; novaColuna<N; novaColuna++){
             
-            if(coluna == colunaAtual){
+            //pula a coluna que rainha já está colocada
+            if(novaColuna == colunaAtual){
                 continue;
             }
-
+      
+            //geramos um novo vizinho posicionado em uma nova coluna
             No novoVizinho;
 
             novoVizinho.estado = atual->estado;
 
-            novoVizinho.estado[linha] = coluna;
+            novoVizinho.estado[linha] = novaColuna;
 
             vizinhos.push_back(novoVizinho);
         }
     }
 
     return vizinhos;
+}
 
+void atualizarCustos(No &vizinho, No *atual){
+    vizinho.g = atual->g + 1;
+
+    vizinho.h = contarRainhasConflitantes(vizinho.estado);
+
+    vizinho.f = vizinho.g + vizinho.h;
 }
 
 MetricasBusca a_estrela(int n_rainhas, const vector<int>& estadoInicial){
@@ -129,10 +130,11 @@ MetricasBusca a_estrela(int n_rainhas, const vector<int>& estadoInicial){
     long long nosExpandidos = 0;
 
     //FILA DE PRIORIDADE q ordena de acordo com o f
-    priority_queue<No, vector<No>,Comparador> listaAberta;
+    priority_queue<No, vector<No>,Comparador> filaPrioridade;
 
-    //CONJUNTO FECHADO
-    set<vector<int>> listaFechada;
+    //LISTA FECHADA E ABERTA contendo o nó
+    map<vector<int>, No> listaFechada;
+    map<vector<int>, No> listaAberta;
 
     //NÓ INICIAL
     No noInicial;
@@ -140,24 +142,24 @@ MetricasBusca a_estrela(int n_rainhas, const vector<int>& estadoInicial){
     //definindo valores do estado inicial
     noInicial.estado = estadoInicial;
     noInicial.g = 0;
-    noInicial.h = calcularHeuristica(estadoInicial);
+    noInicial.h = contarRainhasConflitantes(estadoInicial);
     noInicial.f = noInicial.g + noInicial.h;
 
     //inserindo estado inicial
-    listaAberta.push(noInicial);
+    filaPrioridade.push(noInicial);
 
     while (!listaAberta.empty()){
-        //pega o nó inicial inserido
-        No noAtual = listaAberta.top();
+        //pega o nó inicial com a menor ponutação em f
+        No noAtual = filaPrioridade.top();
         //retira o nó do topo
-        listaAberta.pop();
+        filaPrioridade.pop();
         nosExpandidos++;
 
-        //pegando as posiçoes das rainhas do nó atual
-        const vector<int>&posicoesAtuais = noAtual.estado;
+        //pega nó atual que acabou de ser removido do topo da pilha
+        const vector<int> &posicoesAtuais = noAtual.estado;
         
-        //encerramento do programa quando preenche as n_rainhas
-        //converte em int comum para compilador não avisar erro
+        //verifica se atingiu o estado objetivo
+        //estado objetivo quando existirem 0 RAINHAS COM CONFLITO
         if(estadoObjetivo(posicoesAtuais)){
             
             //coleta resultados
@@ -168,13 +170,14 @@ MetricasBusca a_estrela(int n_rainhas, const vector<int>& estadoInicial){
             resultado.nosExpandidos = nosExpandidos;
             return resultado;
         }
-        //insere na listaFechada o estado atual
+        //coloque o nó atual na lista fechada 
         listaFechada.insert(noAtual.estado);
 
-        vector<No> vizinhos = gerarVizinhos(&noAtual);
+        //observe todos os seus vizinhos
+        //gerar vizinhos
+        vector<No>vizinhos = gerarVizinhos(&noAtual);
 
         //processamento de vizinhos
-
         for (int i = 0; i < vizinhos.size(); i++){
 
             //verifica se vizinho pertence a lista fechada
@@ -184,7 +187,7 @@ MetricasBusca a_estrela(int n_rainhas, const vector<int>& estadoInicial){
            
 
             atualizarCustos(vizinhos[i],&noAtual);
-            listaAberta.push(vizinhos[i]);
+            filaPrioridade.push(vizinhos[i]);
             nosGerados++;
         }
         
@@ -199,7 +202,7 @@ MetricasBusca a_estrela(int n_rainhas, const vector<int>& estadoInicial){
 }
 
 //função para medir tempo de execução
-MetricasBusca executarA_star(int n_rainhas, const vector<int>& estadoInicial) {
+MetricasBusca executarA_star(int n_rainhas, const vector<int> &estadoInicial) {
     auto inicio = chrono::high_resolution_clock::now();
     
     random_device rd;
@@ -232,45 +235,58 @@ vector<MetricasBusca> benchmark_Aestrela(){
         MetricasBusca resultado = executarA_star(n_rainhas, estadoInicialParaTeste);
         resultados.push_back(resultado);
     }
+    return resultados;
 }
 
-
+// --- SEU NOVO MAIN DE TESTES ---
 int main() {
+    int n_rainhas = 8; // Você pode alterar para testar outros tamanhos
 
-    int N = 8;
+    // Inicializa o gerador local apenas para criar o estado inicial do teste
+    random_device rd;
+    mt19937 rng(rd());
+    
+    cout << "========================================\n";
+    cout << "   TESTANDO EXECUÇÃO ÚNICA DO A* \n";
+    cout << "========================================\n";
 
-    MetricasBusca resultado = executarA_star(N);
+    // 1. Gera e desenha o estado inicial
+    vector<int> estadoInicial = gerarEstadoAleatorio(n_rainhas, rng);
+    cout << "Estado Inicial Sorteado: ";
+    for(int val : estadoInicial) cout << val << " ";
+    cout << "\nHeuristica Inicial (Conflitos): " << contarRainhasConflitantes(estadoInicial) << "\n";
+    desenhar_tabuleiro(estadoInicial);
 
-    cout << "===== RESULTADO A* =====\n\n";
+    // 2. Executa o algoritmo informando o estado gerado
+    MetricasBusca resultadoUnico = executarA_star(n_rainhas, estadoInicial);
 
-    cout << "Semente: " << resultado.sementeUsada << endl;
+    // 3. Exibe os resultados obtidos
+    cout << "\n----------------------------------------\n";
+    cout << "Resultado do A*:\n";
+    cout << "Semente de Registro: " << resultadoUnico.sementeUsada << "\n";
+    cout << "Tempo de Execucao:   " << resultadoUnico.tempoExecucaoMs << " ms\n";
+    cout << "Nos Gerados:         " << resultadoUnico.nosGerados << "\n";
+    cout << "Nos Expandidos:      " << resultadoUnico.nosExpandidos << "\n";
+    
+    cout << "Estado Final:        ";
+    for(int val : resultadoUnico.solucao) cout << val << " ";
+    cout << "\n";
+    desenhar_tabuleiro(resultadoUnico.solucao);
 
-    cout << "\nEstado inicial:\n";
-    for (int valor : resultado.solucaoInicial)
-        cout << valor << " ";
-    cout << endl;
+    cout << "\n========================================\n";
+    cout << "   TESTANDO BENCHMARK DO A* (5 VEZES)  \n";
+    cout << "========================================\n";
 
-    desenhar_tabuleiro(resultado.solucaoInicial);
-
-    cout << "\nEstado final:\n";
-    for (int valor : resultado.solucao)
-        cout << valor << " ";
-    cout << endl;
-
-    desenhar_tabuleiro(resultado.solucao);
-
-    cout << "\nHeurística final: "
-         << calcularHeuristica(resultado.solucao)
-         << endl;
-
-    cout << "\nNós gerados: " << resultado.nosGerados << endl;
-    cout << "Nós expandidos: " << resultado.nosExpandidos << endl;
-    cout << "Tempo: " << resultado.tempoExecucaoMs << " ms" << endl;
-
-    if (estadoObjetivo(resultado.solucao))
-        cout << "\nSolução encontrada!\n";
-    else
-        cout << "\nNenhuma solução encontrada.\n";
+    vector<MetricasBusca> resultadosBenchmark = benchmark_Aestrela();
+    
+    for(size_t i = 0; i < resultadosBenchmark.size(); i++) {
+        cout << "Teste #" << i + 1 
+             << " | Tempo: " << resultadosBenchmark[i].tempoExecucaoMs << " ms"
+             << " | Gerados: " << resultadosBenchmark[i].nosGerados 
+             << " | Expandidos: " << resultadosBenchmark[i].nosExpandidos << "\n";
+    }
+    cout << "========================================\n";
 
     return 0;
 }
+

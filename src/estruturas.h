@@ -1,6 +1,7 @@
 #ifndef ASTAR_H
 #define ASTAR_H
 #include <vector>
+#include <random>
 using namespace std;
 
 //esturtura do No
