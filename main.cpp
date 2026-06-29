@@ -42,10 +42,10 @@ int main(){
     cors.global().origin("*").methods("POST"_method, "GET"_method, "PUT"_method, "DELETE"_method).headers("Content-Type", "Authorization"); 
     
     CROW_ROUTE(app, "/")([](){
-        // Corpo JSON
+        //json
         json::wvalue resposta;
         
-        // Mensagem de boas-vindas e informações sobre o trabalho
+        //mensagem de boas-vindas e informações sobre o trabalho
         resposta["status"] = "sucesso";
         resposta["mensagem"] = "Bem-vindo a API do Problema das N-Rainhas!";
         resposta["disciplina"] = "Inteligência Artificial";
