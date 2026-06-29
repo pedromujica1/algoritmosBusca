@@ -41,6 +41,21 @@ int main(){
     //permite todas as origens, metódos POST/GET/PUT/DELETE e header de Content-type  permitidos
     cors.global().origin("*").methods("POST"_method, "GET"_method, "PUT"_method, "DELETE"_method).headers("Content-Type", "Authorization"); 
     
+    CROW_ROUTE(app, "/")([](){
+        // Corpo JSON
+        json::wvalue resposta;
+        
+        // Mensagem de boas-vindas e informações sobre o trabalho
+        resposta["status"] = "sucesso";
+        resposta["mensagem"] = "Bem-vindo a API do Problema das N-Rainhas!";
+        resposta["disciplina"] = "Inteligência Artificial";
+        resposta["professor"] = "Prof. Adriana";
+        resposta["descricao"] = "API desenvolvida para resolver e gerar estados do problema das N-Rainhas utilizando algoritmos de busca.";
+        
+        return resposta;
+    });
+    
+    
     CROW_ROUTE(app, "/estado-inicial/<int>")([](int n){
 
         //corpo JSON
