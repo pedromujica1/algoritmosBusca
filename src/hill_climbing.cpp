@@ -26,16 +26,16 @@ int calcularConflito(const vector<int>& vetor, int n) {
 void encontrarMelhorVizinho(const vector<int>& vetor, int n, vector<int>& melhorVizinho, int& melhorConflito, long long &nosGerados) {
     melhorVizinho = vetor;
     
-    for(int coluna = 0; coluna < n; coluna++){ 
-        int linhaAtual = vetor[coluna];
+    for(int linha = 0; linha < n; linha++){ 
+        int colunaAtual = vetor[linha];
         
-        for(int novaLinha = 0; novaLinha < n; novaLinha++){ 
-            if (novaLinha == linhaAtual){ 
+        for(int novaColuna = 0; novaColuna < n; novaColuna++){ 
+            if (novaColuna == colunaAtual){ 
                 continue;
             }
             
             vector<int> vizinho = vetor;
-            vizinho[coluna] = novaLinha;
+            vizinho[linha] = novaColuna;
             nosGerados++;
 
             int conflitos = calcularConflito(vizinho, n);
